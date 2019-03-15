@@ -28,11 +28,11 @@ public class Tile : MonoBehaviour {
         }
     }
 
-    private ElementType tileType;       //标识数字 方块的单位类型id
-    public int TileLevel = 0;           //方块的等级
-
+    private ElementType tileType;       //方块的单位类型id
     private Image TileImage;            //方块的样式
+    public int TileLevel = 0;           //方块的等级
     private Text TileText;              //方块的数字
+    public bool isMove = false;         //记录方块是否发生过移动
 
     void Awake()
     {

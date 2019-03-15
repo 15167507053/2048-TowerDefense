@@ -8,10 +8,9 @@ public class Power : MonoBehaviour {
 
     private int power;      //电力 <0时游戏失败
 
-    public static Power Instance;    //对象实例 用于从外界调用该类的构造函数
+    public Text powerText;  //UI显示面板
 
-    //UI显示面板
-    public Text powerText;
+    public static Power Instance;    //对象实例 用于从外界调用该类的构造函数
 
     public int Numerical
     {
@@ -33,8 +32,11 @@ public class Power : MonoBehaviour {
         Instance = this;
 
         ///初始化面板
-        powerText.text = "50";      //初始电力为50
-        power = int.Parse(powerText.text);
+        power = 50;        //初始电力为50
+        powerText.text = power.ToString();
+
+        //powerText.text = "100";      //初始电力为100
+        //power = int.Parse(powerText.text);
     }
 
 }

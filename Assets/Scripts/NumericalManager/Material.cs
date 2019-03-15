@@ -8,10 +8,9 @@ public class Material : MonoBehaviour {
 
     private int material;   //建材
 
-    public static Material Instance;    //对象实例 用于从外界调用该类的构造函数
+    public Text materialText;   //UI显示面板
 
-    //UI显示面板
-    public Text materialText;
+    public static Material Instance;    //对象实例 用于从外界调用该类的构造函数
 
     public int Numerical
     {
@@ -33,8 +32,11 @@ public class Material : MonoBehaviour {
         Instance = this;
 
         ///初始化面板
-        materialText.text = "0";    //初始建材为0
-        material = int.Parse(materialText.text);
+        material = 0;       //初始建材为0
+        materialText.text = material.ToString();
+
+        //materialText.text = "0";    //初始建材为0
+        //material = int.Parse(materialText.text);
     }
 
 }

@@ -66,7 +66,7 @@ public class EventManager : MonoBehaviour {
     }
     public void Power()
     {
-        int MaterialPrice =2 * 2;
+        int MaterialPrice = 2 * 2;
         int MoneyPrice = 10 * 2;
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {

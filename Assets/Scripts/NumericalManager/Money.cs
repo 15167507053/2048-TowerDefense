@@ -8,10 +8,9 @@ public class Money : MonoBehaviour {
 
     private int money;      //金钱 可负债
 
-    public static Money Instance;    //对象实例 用于从外界调用该类的构造函数
+    public Text moneyText;  //UI显示面板
 
-    //UI显示面板
-    public Text moneyText;
+    public static Money Instance;    //对象实例 用于从外界调用该类的构造函数
 
     public int Numerical
     {
@@ -23,7 +22,7 @@ public class Money : MonoBehaviour {
         {
             money = value;
             //实时更新当前资源
-            PlayerPrefs.SetInt("Account", money);
+            //PlayerPrefs.SetInt("Account", money);
             moneyText.text = money.ToString();
         }
     }
@@ -34,14 +33,17 @@ public class Money : MonoBehaviour {
         Instance = this;
 
         ///初始化面板
-        //如果是第一次进行游戏 则初始化金钱为0
+        //如果是第一次进行游戏 则初始化金钱为100
         if (!PlayerPrefs.HasKey("Account"))
         {
-            PlayerPrefs.SetInt("Account", 0);
+            PlayerPrefs.SetInt("Account", 100);
         }
         //获取到上一局所得的金钱
-        moneyText.text = PlayerPrefs.GetInt("Account").ToString();
-        money = int.Parse(moneyText.text);
+        money = PlayerPrefs.GetInt("Account");
+        moneyText.text = money.ToString();
+
+        //moneyText.text = PlayerPrefs.GetInt("Account").ToString();
+        //money = int.Parse(moneyText.text);
     }
 
 }
