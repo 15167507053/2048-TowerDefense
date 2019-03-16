@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//游戏状态
+public enum GameState
+{
+    Playing,                //可操作
+    GameSuspension,         //游戏暂停
+    WaitingForMoveToEnd     //等待移动结束
+}
+
 //定义一个枚举来储存方块元素类型
 public enum ElementType
 {
@@ -23,7 +31,9 @@ public class GameManager : MonoBehaviour
 {
 
     private int turn = 0;       //记录回合数
-    private bool over = false;  //游戏是否结束
+    public bool over = false;  //游戏是否结束
+
+    public GameState State;     //游戏状态
 
     # region 行列与方块列表
 
@@ -51,7 +61,7 @@ public class GameManager : MonoBehaviour
     {
         //新游戏开始
         over = true;    //游戏处于开启状态
-        turn = 1;       //第0回合开始
+        turn = 3;       //第0回合开始
 
         //游戏开始时清除场地
         Tile[] AllTilesOneDim = GameObject.FindObjectsOfType<Tile>();   //获取到所有的方块
@@ -94,11 +104,11 @@ public class GameManager : MonoBehaviour
         rows.Add(new Tile[] { AllTiles[10, 0], AllTiles[10, 1], AllTiles[10, 2], AllTiles[10, 3], AllTiles[10, 4], AllTiles[10, 5], AllTiles[10, 6], AllTiles[10, 7] });
         #endregion
 
-        //开局时新建【1个主角】【2个建材】【x个墙壁】【一个敌人】
+        //开局时新建【1个主角】【2个建材】【x个墙壁】
         Generate(ElementType.Player);
         Generate(ElementType.Material);
         Generate(ElementType.Material);
-        Generate(ElementType.Enemy);
+        //Generate(ElementType.Enemy);
 
         int x = 3;
         while (x > 0)
@@ -661,7 +671,7 @@ public class GameManager : MonoBehaviour
                 Generate(ElementType.Material);     //回合结束后 新建一个建材
                 if (turn % 5 == 0)
                 {
-                    Generate(ElementType.Enemy);    //每两回合产生一个敌人
+                    Generate(ElementType.Enemy);    //每五回合产生一个敌人
                 }
 
                 /// 9.游戏失败的判定

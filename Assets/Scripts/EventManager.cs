@@ -138,6 +138,10 @@ public class EventManager : MonoBehaviour {
     {
         //将菜单设为可见
         OptionsPanel.SetActive(true);
+
+        //暂停接受输入
+        //gm.State = GameState.GameSuspension;
+        gm.over = false;
     }
     //关闭菜单
     public void OptionsOff()
@@ -149,6 +153,10 @@ public class EventManager : MonoBehaviour {
 
         //关闭菜单面板
         OptionsPanel.SetActive(false);
+
+        //重新接受输入
+        //gm.State = GameState.Playing;
+        gm.over = true;
     }
 
     //说明文字

@@ -23,7 +23,7 @@ public class TouchInputManager : MonoBehaviour {
 
 	void Update () {
         //若 此时处于可操作状态 且 触点数大于0个
-        if (Input.touchCount > 0)
+        if (gm.State == GameState.Playing && Input.touchCount > 0)
         {
             //遍历每一个touches 接触
             foreach (Touch touch in Input.touches)      

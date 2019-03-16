@@ -163,6 +163,6 @@ public class Tile : MonoBehaviour {
     public void Tilebtn()
     {
         string s = indRow + "，" + indCol;
-        EventManager.Instance.ConstructionOn(transform.position, s);    //显示建造面板
+        //EventManager.Instance.ConstructionOn(transform.position, s);    //显示建造面板
     }
 }
