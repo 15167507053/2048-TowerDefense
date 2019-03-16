@@ -159,4 +159,10 @@ public class Tile : MonoBehaviour {
         TileText.enabled = false;
     }
 
+    //自身的按钮事件
+    public void Tilebtn()
+    {
+        string s = indRow + "，" + indCol;
+        EventManager.Instance.ConstructionOn(transform.position, s);    //显示建造面板
+    }
 }

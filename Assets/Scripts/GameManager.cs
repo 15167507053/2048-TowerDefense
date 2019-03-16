@@ -19,7 +19,8 @@ public enum ElementType
 }
 
 ///主控流程
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
 
     private int turn = 0;       //记录回合数
     private bool over = false;  //游戏是否结束
@@ -189,14 +190,19 @@ public class GameManager : MonoBehaviour {
                     //更新空方块列表
                     EmptyTiles.Add(t);
                     break;
+
                 case ElementType.Tower:
                     //攻击塔
-                    TowerAttack(t.indRow, t.indCol);
+                    //int x = t.indCol;   //max 7
+                    //int y = t.indRow;   //max 10
+                    TowerAttack(t.indCol, t.indRow);
                     break;
+
                 case ElementType.Power:
                     //获得电力 （根据建筑等级？
                     Power.Instance.Numerical += 10;
                     break;
+
                 case ElementType.Mall:
                     //获得金钱 （根据建筑等级？
                     Money.Instance.Numerical += 10;
@@ -205,10 +211,91 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    //攻击塔行为 需要获取到自身的x,y坐标【】
+    //攻击塔 需要获取到自身的x,y坐标
     private void TowerAttack(int x, int y)
     {
+        //int x = t.indCol;   //max 7
+        //int y = t.indRow;   //max 10
 
+        //string s = "攻击塔坐标:" + y + "，" + x;
+        //Debug.Log(s);
+
+        bool attack = false;    //【T】本回合已进行过攻击 【F】未进行过攻击
+
+        //横向 先左后右 (x-3,y) -> (x+3,y)
+        for (int j = x - 3; j <= x + 3; j++)
+        {
+            #region 攻击前的判断
+            if (attack)
+            {
+                Debug.Log("已进行过攻击");
+                break;
+            }
+            if (j < 0 || j > 7)
+            {
+                continue;
+            }
+            #endregion
+
+            #region 发动攻击
+            if (AllTiles[y, j].TileType == ElementType.Enemy)
+            {
+                int consume = AllTiles[y, j].TileLevel * 2;
+                int surplus = Power.Instance.Numerical - consume;
+                if (surplus > 20)
+                {
+                    AllTiles[y, j].TileLevel = 0;
+                    AllTiles[y, j].TileType = ElementType.Empty;
+
+                    attack = true;
+
+                    Power.Instance.Numerical = surplus;
+                    string str = "攻击消耗" + consume;
+                    Debug.Log(str);
+                }
+            }
+            #endregion
+        }
+
+        //纵向 先下后上 (x,y-3) -> (x,y+3)
+        for (int i = y - 3; i <= y + 3; i++)
+        {
+            #region 攻击前的判断
+            //每回合只攻击一个敌人
+            if (attack)
+            {
+                Debug.Log("已进行过攻击");
+                break;
+            }
+            //防止数组下标越界
+            if (i < 0 || i > 10)
+            {
+                continue;
+            }
+            #endregion
+
+            #region 发动攻击
+            //定位到攻击范围内的格子 判断其是否为敌人
+            if (AllTiles[i, x].TileType == ElementType.Enemy)
+            {
+                int consume = AllTiles[i, x].TileLevel * 2;    //攻击消耗
+                int surplus = Power.Instance.Numerical - consume;   //攻击后剩余电力
+                                                                    //判断是否有足够的资源进行攻击
+                if (surplus > 20)
+                {
+                    //清空敌人的等级和样式
+                    AllTiles[i, x].TileLevel = 0;
+                    AllTiles[i, x].TileType = ElementType.Empty;
+
+                    attack = true;      //关闭攻击开关
+                                        //消耗相应资源
+                    Power.Instance.Numerical = surplus;
+                    string str = "攻击消耗" + consume;
+                    Debug.Log(str);
+                }
+            }
+            #endregion
+        }
     }
 
     //合并图块-关闭已合并开关
@@ -226,11 +313,11 @@ public class GameManager : MonoBehaviour {
     bool MakeOneMoveDownIndex(Tile[] LineOfTiles)
     {
         //在逐行获得行/列后，逐个判断方块，进行移动与合并
-        for (int i = 0; i< LineOfTiles.Length - 1; i++)
+        for (int i = 0; i < LineOfTiles.Length - 1; i++)
         {
             /// 4.Move Block 移动方块
             //若方块【自身为空】，且后方有一个【非空】&【非建筑】&【没有发生过碰撞】的方块
-            if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType != ElementType.Empty && 
+            if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType != ElementType.Empty &&
                 (int)LineOfTiles[i + 1].TileType < 5 && LineOfTiles[i + 1].mergedThisTurn == false)
             {
                 //移动
@@ -238,9 +325,9 @@ public class GameManager : MonoBehaviour {
                 LineOfTiles[i].TileType = LineOfTiles[i + 1].TileType;      //将其的类型也进行转移
                 LineOfTiles[i + 1].TileType = ElementType.Empty;            //清空后方方块的数值
                 LineOfTiles[i + 1].TileLevel = 0;                           //清除遗留的数字
-                
+
                 //主角或敌人移动时进行消耗
-                if(LineOfTiles[i].TileType == ElementType.Player || LineOfTiles[i].TileType == ElementType.Enemy)
+                if (LineOfTiles[i].TileType == ElementType.Player || LineOfTiles[i].TileType == ElementType.Enemy)
                 {
                     Power.Instance.Numerical -= 1;
                 }
@@ -259,7 +346,7 @@ public class GameManager : MonoBehaviour {
                     #region 主角
                     case ElementType.Player:
                         //遇到敌人时被破坏 但前提是对方本回合并未发生过碰撞 & 发生过移动
-                        if (LineOfTiles[i + 1].TileType == ElementType.Enemy && 
+                        if (LineOfTiles[i + 1].TileType == ElementType.Enemy &&
                             LineOfTiles[i + 1].mergedThisTurn == false && LineOfTiles[i + 1].isMove == true)
                         {
                             GameOver("玩家受到攻击"); //游戏失败
@@ -294,7 +381,7 @@ public class GameManager : MonoBehaviour {
                             return true;
                         }
                         //敌人 被破坏 但是在自身发生过合并后可以免疫敌人的攻击
-                        else if (LineOfTiles[i + 1].TileType == ElementType.Enemy && LineOfTiles[i + 1].isMove == true && 
+                        else if (LineOfTiles[i + 1].TileType == ElementType.Enemy && LineOfTiles[i + 1].isMove == true &&
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i + 1].mergedThisTurn == false)
                         {
                             //改变样式
@@ -382,7 +469,7 @@ public class GameManager : MonoBehaviour {
         for (int i = LineOfTiles.Length - 1; i > 0; i--)
         {
             ///Move Block 移动方块
-            if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType != ElementType.Empty && 
+            if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType != ElementType.Empty &&
                 (int)LineOfTiles[i - 1].TileType < 5 && LineOfTiles[i - 1].mergedThisTurn == false)
             {
                 LineOfTiles[i].TileLevel = LineOfTiles[i - 1].TileLevel;
@@ -407,7 +494,7 @@ public class GameManager : MonoBehaviour {
                     #region 主角
                     case ElementType.Player:
                         //遇到敌人时被破坏
-                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy && 
+                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy &&
                             LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[i - 1].isMove == true)
                         {
                             GameOver("玩家受到攻击");
@@ -479,7 +566,7 @@ public class GameManager : MonoBehaviour {
                     //其他建筑（攻击塔、发电站、商场
                     default:
                         //会被敌人破坏
-                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy && 
+                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy &&
                             LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[i - 1].isMove == true)
                         {
                             LineOfTiles[i].TileLevel = LineOfTiles[i - 1].TileLevel;
@@ -490,7 +577,7 @@ public class GameManager : MonoBehaviour {
                             return true;
                         }
                         break;
-                    #endregion
+                        #endregion
                 }
             }
             #endregion
@@ -567,12 +654,10 @@ public class GameManager : MonoBehaviour {
             if (moveMade)
             {
                 /// 7. 建筑行为 并更新空方快列表
-                //CanMove();
+                UpdateEmptyTiles();     //触发建筑行为 并且更新空方快列表 防止已有方块被覆盖
                 //Material.Instance.Numerical += 8;   //获得建材
 
                 /// 8.产生新的建材与敌人
-                UpdateEmptyTiles();     //更新空方快列表 防止已有方块被覆盖
-
                 Generate(ElementType.Material);     //回合结束后 新建一个建材
                 if (turn % 5 == 0)
                 {
@@ -586,7 +671,7 @@ public class GameManager : MonoBehaviour {
                     GameOver("电力不足");//显示游戏结束消息
                 }
                 //或是没有可移动的方块
-                else if ( !CanMove() )
+                else if (!CanMove())
                 {
                     GameOver("没有可移动的方块");
                 }

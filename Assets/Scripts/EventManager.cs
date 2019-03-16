@@ -5,6 +5,8 @@ using UnityEngine;
 ///事件与组件管理
 public class EventManager : MonoBehaviour {
 
+    public static EventManager Instance;   //供其他组件的脚本调用
+
     private GameManager gm;     //用于调用gamemanager脚本的方法
 
     public GameObject Construction;     //建造菜单
@@ -16,6 +18,9 @@ public class EventManager : MonoBehaviour {
 
     void Awake()
     {
+        //实例化自身
+        Instance = this;
+
         //获取到gamemanager
         gm = FindObjectOfType<GameManager>();
     }
@@ -33,18 +38,22 @@ public class EventManager : MonoBehaviour {
         Application.LoadLevel(Application.loadedLevel);
     }
 
-    #region 建造
-    //建造面板
-    public void ConstructionOn()
+    #region 方块按钮事件
+    //参数是面板显示的坐标 和需要显示的文字（x，y）
+    //并不直接通过按钮调用 而是【按钮调用tile脚本的函数后】再调用本函数发生事件
+    public void ConstructionOn(Vector3 position, string s)
     {
         Construction.SetActive(true);   //显示面板
-        //Construction.transform.position = position;   //指定坐标跟随
+        Construction.transform.position = position;   //指定坐标跟随
+        Debug.Log(s);   //控制台输出方块的（x,y）
     }
     public void ConstructionOff()
     {
         Construction.SetActive(false);
     }
+    #endregion
 
+    #region 建造
     //建造事件
     public void Tower()
     {
@@ -57,7 +66,7 @@ public class EventManager : MonoBehaviour {
             Money.Instance.Numerical -= MoneyPrice;         //减去相应的金钱（可负债
             gm.Generate(ElementType.Tower);                 //生成相应建筑
 
-            Debug.Log("攻击塔");
+            //Debug.Log("攻击塔");
         }
         else
         {
@@ -74,7 +83,7 @@ public class EventManager : MonoBehaviour {
             Money.Instance.Numerical -= MoneyPrice;
             gm.Generate(ElementType.Power);
 
-            Debug.Log("发电站");
+            //Debug.Log("发电站");
         }
         else
         {
@@ -91,7 +100,7 @@ public class EventManager : MonoBehaviour {
             Money.Instance.Numerical -= MoneyPrice;
             gm.Generate(ElementType.Mall);
 
-            Debug.Log("商场");
+            //Debug.Log("商场");
         }
         else
         {
@@ -108,7 +117,7 @@ public class EventManager : MonoBehaviour {
             Money.Instance.Numerical -= MoneyPrice;
             gm.Generate(ElementType.Wall);
 
-            Debug.Log("防御墙");
+            //Debug.Log("防御墙");
         }
         else
         {
