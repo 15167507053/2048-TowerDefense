@@ -181,6 +181,30 @@ public class EventManager : MonoBehaviour
         }
         ConstructionOff();
     }
+    public void Landmine()
+    {
+        Debug.Log("地雷");
+
+        int MaterialPrice = 2 * 0;
+        int MoneyPrice = 10 * 1;
+        if (Money.Instance.Numerical > 10)
+        {
+            //gm.Generate(ElementType.Landmine);
+            if (gm.Generate(ElementType.Landmine, x, y))
+            {
+                Consume(MaterialPrice, MoneyPrice);
+            }
+            else
+            {
+                enough(1);
+            }
+        }
+        else
+        {
+            enough(2);
+        }
+        ConstructionOff();
+    }
 
     //消耗资源
     private void Consume(int MaterialPrice, int MoneyPrice)

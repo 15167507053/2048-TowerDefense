@@ -23,7 +23,8 @@ public enum ElementType
     Tower = 6,  //6 攻击塔
     Power,      //7 发电站
     Mall,       //8 商场
-    Wall        //9 防御塔
+    Wall,       //9 防御塔
+    Landmine,   //10 地雷
 }
 
 ///主控流程
@@ -229,6 +230,7 @@ public class GameManager : MonoBehaviour
                 UpdateEmptyTiles();     //触发建筑行为 并且更新空方快列表 防止已有方块被覆盖
                 //Material.Instance.Numerical += 50;  //获得建材
                 //Power.Instance.Numerical += 50;     //获得电力
+                //Money.Instance.Numerical += 50;     //获得金钱
 
                 /// 8.产生新的建材与敌人
                 Generate(ElementType.Material);     //回合结束后 新建一个建材
@@ -358,8 +360,8 @@ public class GameManager : MonoBehaviour
                         {
                             LineOfTiles[i].TileLevel *= 2;      //等级翻倍
                             LineOfTiles[i].UpdateTile();        //更新样式
-                            LineOfTiles[i + 1].TileLevel = 0;   //清空上一个方块
-                            LineOfTiles[i + 1].TileType = ElementType.Empty;
+                            LineOfTiles[i + 1].TileLevel = 0;   //清空上一个方块的等级
+                            LineOfTiles[i + 1].TileType = ElementType.Empty;    //清空上一个方块的样式
                             LineOfTiles[i].mergedThisTurn = true;
                             return true;
                         }
@@ -368,6 +370,32 @@ public class GameManager : MonoBehaviour
                     #endregion
 
                     #region 建筑
+                    //地雷
+                    case ElementType.Landmine:
+                        //仅与敌人发生事件 【不管敌人处于何种状态】
+                        if (LineOfTiles[i + 1].TileType == ElementType.Enemy)
+                        {
+                            //被8级以下敌人碰撞 毁灭敌人和自身
+                            if (LineOfTiles[i + 1].TileLevel <= 8)
+                            {
+                                LineOfTiles[i].TileType = ElementType.Empty;    //销毁自身
+                                LineOfTiles[i + 1].TileLevel = 0;               //清空敌人的等级
+                                LineOfTiles[i + 1].TileType = ElementType.Empty;//清空敌人的样式
+                            }
+                            //8级以上敌人等级减半
+                            else
+                            {
+                                LineOfTiles[i].TileLevel = LineOfTiles[i + 1].TileLevel / 2;    //等级减半
+                                LineOfTiles[i].TileType = ElementType.Enemy;                    //销毁变为敌人
+                                LineOfTiles[i + 1].TileLevel = 0;                               //清空上一个方块的等级
+                                LineOfTiles[i + 1].TileType = ElementType.Empty;                //清空上一个方块的样式
+                                LineOfTiles[i].mergedThisTurn = true;   //敌人不再碰撞
+                            }
+                            //不再移动
+                            return true;
+                        }
+                        break;
+
                     //墙壁
                     case ElementType.Wall:
                         //不发生任何事件
@@ -528,6 +556,28 @@ public class GameManager : MonoBehaviour
                     #endregion
 
                     #region 建筑
+                    //地雷
+                    case ElementType.Landmine:
+                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy)
+                        {
+                            if (LineOfTiles[i + 1].TileLevel <= 8)
+                            {
+                                LineOfTiles[i].TileType = ElementType.Empty;
+                                LineOfTiles[i - 1].TileLevel = 0;
+                                LineOfTiles[i - 1].TileType = ElementType.Empty;
+                            }
+                            else
+                            {
+                                LineOfTiles[i].TileLevel = LineOfTiles[i - 1].TileLevel / 2;
+                                LineOfTiles[i].TileType = ElementType.Enemy;
+                                LineOfTiles[i - 1].TileLevel = 0;
+                                LineOfTiles[i - 1].TileType = ElementType.Empty;
+                                LineOfTiles[i].mergedThisTurn = true;
+                            }
+                            return true;
+                        }
+                        break;
+
                     //墙壁
                     case ElementType.Wall:
                         //不发生任何事件
@@ -594,7 +644,7 @@ public class GameManager : MonoBehaviour
 
                 case ElementType.Power:
                     //获得电力 （根据建筑等级？
-                    Power.Instance.Numerical += 10;
+                    Power.Instance.Numerical += 7;
                     break;
 
                 case ElementType.Mall:
@@ -799,6 +849,11 @@ public class GameManager : MonoBehaviour
                     t.TileType = ElementType.Empty;
                 }
             }
+        }
+        //制造一个敌人
+        else if (Input.GetKeyDown(KeyCode.A))
+        {
+            Generate(ElementType.Enemy);
         }
     }
 

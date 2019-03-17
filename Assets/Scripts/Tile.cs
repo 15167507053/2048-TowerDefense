@@ -102,6 +102,10 @@ public class Tile : MonoBehaviour
                 TileLevel = 0;
                 ApplyStyleFromHolder(6);
                 break;
+            case ElementType.Landmine:      //地雷
+                TileLevel = 0;
+                ApplyStyleFromHolder(7);
+                break;
             default:
                 Debug.LogError("Check the numbers that you pass to ApplyStyle!");
                 break;

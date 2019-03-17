@@ -5,9 +5,10 @@ using UnityEngine.UI;
 
 [System.Serializable]   //序列化
 public class TileStyle
-{
-    public int type;        //单位类型
-    public Sprite image;    //单位样式
+{   
+    public ElementType type;    //单位类型
+    public Sprite image;        //单位样式
+    //public int type;
     //public int level;       //合并等级
 }
 
