@@ -9,12 +9,14 @@ public class EventManager : MonoBehaviour {
 
     private GameManager gm;     //用于调用gamemanager脚本的方法
 
+    #region 游戏对象
     public GameObject Construction;     //建造菜单
 
     public GameObject OptionsPanel;     //菜单面板
     public GameObject ButtonList;       //默认的按钮面板
     public GameObject RuleText;         //规则说明
     public GameObject IntroductionText; //单位说明
+    #endregion
 
     void Awake()
     {
@@ -57,8 +59,8 @@ public class EventManager : MonoBehaviour {
     //建造事件
     public void Tower()
     {
-        int MaterialPrice = 2 * 5;  //造价.建材 = 2的n倍
-        int MoneyPrice = 10 * 2;    //造价.金钱 = 10的n倍
+        int MaterialPrice = 2 * 8;  //造价.建材 = 2的n倍
+        int MoneyPrice = 10 * 5;    //造价.金钱 = 10的n倍
         //如果有足够的建材进行建造
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {
@@ -93,7 +95,7 @@ public class EventManager : MonoBehaviour {
     public void Mall()
     {
         int MaterialPrice = 2 * 4;
-        int MoneyPrice = 10 * 2;
+        int MoneyPrice = 10 * 3;
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {
             Material.Instance.Numerical -= MaterialPrice;
@@ -109,8 +111,8 @@ public class EventManager : MonoBehaviour {
     }
     public void Wall()
     {
-        int MaterialPrice = 2 * 3;
-        int MoneyPrice = 10 * 2;
+        int MaterialPrice = 2 * 1;
+        int MoneyPrice = 10 * 1;
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {
             Material.Instance.Numerical -= MaterialPrice;

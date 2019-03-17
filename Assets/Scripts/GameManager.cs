@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-//游戏状态
+//游戏状态 用于配合动画效果
 public enum GameState
 {
     Playing,                //可操作
@@ -29,11 +29,10 @@ public enum ElementType
 ///主控流程
 public class GameManager : MonoBehaviour
 {
+    public GameState State;     //游戏状态
 
     private int turn = 0;       //记录回合数
-    public bool over = false;  //游戏是否结束
-
-    public GameState State;     //游戏状态
+    public bool over = false;   //游戏是否结束
 
     # region 行列与方块列表
 
@@ -75,10 +74,7 @@ public class GameManager : MonoBehaviour
             //{
             //    Generate(ElementType.Player, t.indRow, t.indCol);   //在指定位置创建主角
             //}
-            //else
-            //{
 
-            //}
         }
 
         # region 初始化 行和列 的列表
@@ -118,7 +114,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// 2.建造一个指定类型的单位 参数是需要建造的单位类型
+    #region 2.建造一个指定类型的单位
+    //【随机位置建造】 参数是需要建造的单位类型
     public void Generate(ElementType Type)
     {
         //若场上仍然存在空方快
@@ -144,160 +141,120 @@ public class GameManager : MonoBehaviour
             //从空方快列表中删除该位置
             EmptyTiles.RemoveAt(PosIndex);
         }
-
-        #region 指定坐标建造方案
-        //if (EmptyTiles.Count > 0)
-        //{
-        //    //如果这是敌人或建材单位 赋予其等级
-        //    if (Type == ElementType.Enemy || Type == ElementType.Material)
-        //    {
-        //        AllTiles[x][y].TileLevel = 2;
-        //    }
-        //    //将指定位置处的方块标记为 指定元素
-        //    AllTiles[x][y].TileType = Type;
-        //}
-        #endregion
     }
 
-    //更新空方块（在每次发生过移动之后）
-    private void UpdateEmptyTiles()
+    //【指定位置建造】 参数是需要建造的单位【类型】和【坐标】
+    //public void Generate(ElementType type, int y, int x)
+    //{
+    //    if (EmptyTiles.Count > 0)
+    //    {
+    //        //如果这是敌人或建材单位 赋予其等级
+    //        if (type == ElementType.Enemy || type == ElementType.Material)
+    //        {
+    //            AllTiles[x, y].TileLevel = 2;
+    //        }
+    //        //将指定位置处的方块标记为 指定元素
+    //        AllTiles[x, y].TileType = type;
+    //    }
+    //}
+    #endregion
+
+    //获取到输入后的【回合行为】
+    public void Move(MoveDirection md)
     {
-        //清空空方快列表
-        EmptyTiles.Clear();
-        //遍历所有方块
-        foreach (Tile t in AllTiles)
+        if (over)   //若游戏已经结束 不执行回合的行为
         {
-            /// 7.建筑行为与空方快列表的更新
-            switch (t.TileType)
+            /// 3.获取输入并处理
+            bool moveMade = false;  //用于判断本次输入是否有效
+            ResetMergedFlags();     //清空所有方块上的开关
+
+            #region 触发【4.移动】【5.合并】【6.消耗】方法
+            switch (md)
             {
-                case ElementType.Empty:
-                    //更新空方块列表
-                    EmptyTiles.Add(t);
+                case MoveDirection.Down:    //下
+                    for (int i = 0; i < colums.Count; i++)
+                    {
+                        while (MakeOneMoveDownIndex(colums[i]))   //i为行/列号 逐行传递给移动函数
+                        {
+                            moveMade = true;
+                        }
+                    }
                     break;
-
-                case ElementType.Tower:
-                    //攻击塔
-                    TowerAttack(t.indCol, t.indRow);
+                case MoveDirection.Left:    //左
+                    for (int i = 0; i < rows.Count; i++)
+                    {
+                        while (MakeOneMoveDownIndex(rows[i]))
+                        {
+                            moveMade = true;
+                        }
+                    }
                     break;
-
-                case ElementType.Power:
-                    //获得电力 （根据建筑等级？
-                    Power.Instance.Numerical += 10;
+                case MoveDirection.Right:   //右
+                    for (int i = 0; i < rows.Count; i++)
+                    {
+                        while (MakeOneMoveUpIndex(rows[i]))
+                        {
+                            moveMade = true;
+                        }
+                    }
                     break;
-
-                case ElementType.Mall:
-                    //获得金钱 （根据建筑等级？
-                    Money.Instance.Numerical += 5;
+                case MoveDirection.Up:     //上
+                    for (int i = 0; i < colums.Count; i++)
+                    {
+                        while (MakeOneMoveUpIndex(colums[i]))
+                        {
+                            moveMade = true;
+                        }
+                    }
                     break;
-            }
-        }
-    }
-
-    //攻击塔 需要获取到自身的x,y坐标
-    private void TowerAttack(int x, int y)
-    {
-        //int x = t.indCol;   //max 7
-        //int y = t.indRow;   //max 10
-
-        //string s = "攻击塔坐标:" + y + "，" + x;
-        //Debug.Log(s);
-
-        bool attack = false;    //【T】本回合已进行过攻击 【F】未进行过攻击
-
-        //横向 先左后右 (x-3,y) -> (x+3,y)
-        for (int j = x - 3; j <= x + 3; j++)
-        {
-            #region 攻击前的判断
-            if (attack)
-            {
-                Debug.Log("已进行过攻击");
-                break;
-            }
-            if (j < 0 || j > 7)
-            {
-                continue;
             }
             #endregion
 
-            #region 发动攻击
-            if (AllTiles[y, j].TileType == ElementType.Enemy)
+            //移动发生后的行为
+            if (moveMade)
             {
-                int consume = AllTiles[y, j].TileLevel * 2;
-                int surplus = Power.Instance.Numerical - consume;
-                if (surplus > 20)
+                /// 7. 建筑行为 并更新空方快列表
+                UpdateEmptyTiles();     //触发建筑行为 并且更新空方快列表 防止已有方块被覆盖
+                //Material.Instance.Numerical += 8;   //获得建材
+
+                /// 8.产生新的建材与敌人
+                Generate(ElementType.Material);     //回合结束后 新建一个建材
+                if (turn % 5 == 0)
                 {
-                    AllTiles[y, j].TileLevel = 0;
-                    AllTiles[y, j].TileType = ElementType.Empty;
-
-                    attack = true;
-
-                    Power.Instance.Numerical = surplus;
-                    string str = "攻击消耗" + consume;
-                    Debug.Log(str);
+                    Generate(ElementType.Enemy);    //每五回合产生一个敌人
                 }
-            }
-            #endregion
-        }
 
-        //纵向 先下后上 (x,y-3) -> (x,y+3)
-        for (int i = y - 3; i <= y + 3; i++)
-        {
-            #region 攻击前的判断
-            //每回合只攻击一个敌人
-            if (attack)
-            {
-                Debug.Log("已进行过攻击");
-                break;
-            }
-            //防止数组下标越界
-            if (i < 0 || i > 10)
-            {
-                continue;
-            }
-            #endregion
-
-            #region 发动攻击
-            //定位到攻击范围内的格子 判断其是否为敌人
-            if (AllTiles[i, x].TileType == ElementType.Enemy)
-            {
-                int consume = AllTiles[i, x].TileLevel * 2;    //攻击消耗
-                int surplus = Power.Instance.Numerical - consume;   //攻击后剩余电力
-                                                                    //判断是否有足够的资源进行攻击
-                if (surplus > 20)
+                /// 9.游戏胜负的判定
+                //【30回合后】场上【不存在敌人】 则游戏胜利
+                if(turn > 32 && NotEnemy())    //turn从3开始
                 {
-                    //清空敌人的等级和样式
-                    AllTiles[i, x].TileLevel = 0;
-                    AllTiles[i, x].TileType = ElementType.Empty;
-
-                    attack = true;      //关闭攻击开关
-                                        //消耗相应资源
-                    Power.Instance.Numerical = surplus;
-                    string str = "攻击消耗" + consume;
-                    Debug.Log(str);
+                    YouWon();
                 }
+
+                //如果电力不足
+                if (Power.Instance.Numerical <= 0)
+                {
+                    GameOver("电力不足");//显示游戏结束消息
+                }
+                //或是没有可移动的方块
+                else if (!CanMove())
+                {
+                    GameOver("没有可移动的方块");
+                }
+
+                /// 0.回合结束
+                turn++;
             }
-            #endregion
         }
     }
 
-    //合并图块-关闭已合并开关
-    private void ResetMergedFlags()
-    {
-        //遍历所有的方块
-        foreach (Tile t in AllTiles)
-        {
-            t.mergedThisTurn = false;   //将他们标记为可合并，用于下回合的行动
-            t.isMove = false;           //将所有的方块标记为未移动
-        }
-    }
-
-    //移动与合并方块 参数是【指定行号的行/列】
+    //【移动】与【合并】方块 参数是【指定行号的行/列】
     bool MakeOneMoveDownIndex(Tile[] LineOfTiles)
     {
         //在逐行获得行/列后，逐个判断方块，进行移动与合并
         for (int i = 0; i < LineOfTiles.Length - 1; i++)
         {
-            /// 4.Move Block 移动方块
+            #region 4.Move Block 移动方块
             //若方块【自身为空】，且后方有一个【非空】&【非建筑】&【没有发生过碰撞】的方块
             if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType != ElementType.Empty &&
                 (int)LineOfTiles[i + 1].TileType < 5 && LineOfTiles[i + 1].mergedThisTurn == false)
@@ -316,11 +273,11 @@ public class GameManager : MonoBehaviour
                 LineOfTiles[i].isMove = true;  //本格（该单位）发生过移动
                 return true;    //用于控制循环，直至没有可合并的方块
             }
+            #endregion
 
-            /// 5.Merge Block 合并方块
-            #region 碰撞规则
-            //若方块【自身不为空】
-            if (LineOfTiles[i].TileType != ElementType.Empty)
+            #region 5.Merge Block 合并方块
+            //碰撞规则
+            if (LineOfTiles[i].TileType != ElementType.Empty)   //若方块【自身不为空】
             {
                 //根据自身类型选择合并规则（自身是被合并的一方
                 switch (LineOfTiles[i].TileType)
@@ -450,7 +407,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = LineOfTiles.Length - 1; i > 0; i--)
         {
-            ///Move Block 移动方块
+            #region 4.移动方块
             if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType != ElementType.Empty &&
                 (int)LineOfTiles[i - 1].TileType < 5 && LineOfTiles[i - 1].mergedThisTurn == false)
             {
@@ -466,9 +423,10 @@ public class GameManager : MonoBehaviour
                 LineOfTiles[i].isMove = true;
                 return true;
             }
+            #endregion
 
-            ///Merge Block 合并方块
-            #region 碰撞规则
+            #region 5.合并方块
+            //碰撞规则
             if (LineOfTiles[i].TileType != ElementType.Empty)
             {
                 switch (LineOfTiles[i].TileType)
@@ -581,98 +539,141 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-    //获取到输入后的行为 参数为获取到的移动方向 根据方向进行相应的移动
-    public void Move(MoveDirection md)
+    //更新空方块与建筑行为
+    private void UpdateEmptyTiles()
     {
-        if (over)   //若游戏已经结束 不执行回合的行为
+        //清空空方快列表
+        EmptyTiles.Clear();
+        //遍历所有方块
+        foreach (Tile t in AllTiles)
         {
-            /// 3.获取输入并处理
-            bool moveMade = false;  //用于判断本次输入是否有效
-            ResetMergedFlags();     //清空所有方块上的开关
-
-            #region 处理【4.移动】【5.合并】【6.消耗】
-            switch (md)
+            /// 7.建筑行为与空方快列表的更新
+            switch (t.TileType)
             {
-                case MoveDirection.Down:    //下
-                    for (int i = 0; i < colums.Count; i++)
-                    {
-                        while (MakeOneMoveDownIndex(colums[i]))   //i为行/列号 逐行传递给移动函数
-                        {
-                            moveMade = true;
-                        }
-                    }
+                case ElementType.Empty:
+                    //更新空方块列表
+                    EmptyTiles.Add(t);
                     break;
-                case MoveDirection.Left:    //左
-                    for (int i = 0; i < rows.Count; i++)
-                    {
-                        while (MakeOneMoveDownIndex(rows[i]))
-                        {
-                            moveMade = true;
-                        }
-                    }
+
+                case ElementType.Tower:
+                    //攻击塔
+                    TowerAttack(t.indCol, t.indRow);
                     break;
-                case MoveDirection.Right:   //右
-                    for (int i = 0; i < rows.Count; i++)
-                    {
-                        while (MakeOneMoveUpIndex(rows[i]))
-                        {
-                            moveMade = true;
-                        }
-                    }
+
+                case ElementType.Power:
+                    //获得电力 （根据建筑等级？
+                    Power.Instance.Numerical += 10;
                     break;
-                case MoveDirection.Up:     //上
-                    for (int i = 0; i < colums.Count; i++)
-                    {
-                        while (MakeOneMoveUpIndex(colums[i]))
-                        {
-                            moveMade = true;
-                        }
-                    }
+
+                case ElementType.Mall:
+                    //获得金钱 （根据建筑等级？
+                    Money.Instance.Numerical += 5;
                     break;
+            }
+        }
+    }
+
+    //【攻击塔】 参数是塔的x,y坐标
+    private void TowerAttack(int x, int y)
+    {
+        //int x = t.indCol;   //max 7
+        //int y = t.indRow;   //max 10
+
+        //string s = "攻击塔坐标:" + y + "，" + x;
+        //Debug.Log(s);
+
+        bool attack = false;    //【T】本回合已进行过攻击 【F】未进行过攻击
+
+        //横向 先左后右 (x-3,y) -> (x+3,y)
+        for (int j = x - 3; j <= x + 3; j++)
+        {
+            #region 攻击前的判断
+            if (attack)
+            {
+                Debug.Log("已进行过攻击");
+                break;
+            }
+            if (j < 0 || j > 7)
+            {
+                continue;
             }
             #endregion
 
-            //移动发生后的行为
-            if (moveMade)
+            #region 发动攻击
+            if (AllTiles[y, j].TileType == ElementType.Enemy)
             {
-                /// 7. 建筑行为 并更新空方快列表
-                UpdateEmptyTiles();     //触发建筑行为 并且更新空方快列表 防止已有方块被覆盖
-                //Material.Instance.Numerical += 8;   //获得建材
-
-                /// 8.产生新的建材与敌人
-                Generate(ElementType.Material);     //回合结束后 新建一个建材
-                if (turn % 5 == 0)
+                int consume = AllTiles[y, j].TileLevel * 2;
+                int surplus = Power.Instance.Numerical - consume;
+                if (surplus > 20)
                 {
-                    Generate(ElementType.Enemy);    //每五回合产生一个敌人
-                }
+                    AllTiles[y, j].TileLevel = 0;
+                    AllTiles[y, j].TileType = ElementType.Empty;
 
-                /// 9.游戏胜负的判定
-                //【30回合后】场上【不存在敌人】 则游戏胜利
-                if(turn > 32 && HaveEnemy())    //turn从3开始
-                {
-                    YouWon();
-                }
+                    attack = true;
 
-                //如果电力不足
-                if (Power.Instance.Numerical <= 0)
-                {
-                    GameOver("电力不足");//显示游戏结束消息
+                    Power.Instance.Numerical = surplus;
+                    string str = "攻击消耗" + consume;
+                    Debug.Log(str);
                 }
-                //或是没有可移动的方块
-                else if (!CanMove())
-                {
-                    GameOver("没有可移动的方块");
-                }
-
-                /// 0.回合结束
-                turn++;
             }
+            #endregion
+        }
+
+        //纵向 先下后上 (x,y-3) -> (x,y+3)
+        for (int i = y - 3; i <= y + 3; i++)
+        {
+            #region 攻击前的判断
+            //每回合只攻击一个敌人
+            if (attack)
+            {
+                Debug.Log("已进行过攻击");
+                break;
+            }
+            //防止数组下标越界
+            if (i < 0 || i > 10)
+            {
+                continue;
+            }
+            #endregion
+
+            #region 发动攻击
+            //定位到攻击范围内的格子 判断其是否为敌人
+            if (AllTiles[i, x].TileType == ElementType.Enemy)
+            {
+                int consume = AllTiles[i, x].TileLevel * 2;    //攻击消耗
+                int surplus = Power.Instance.Numerical - consume;   //攻击后剩余电力
+                                                                    //判断是否有足够的资源进行攻击
+                if (surplus > 20)
+                {
+                    //清空敌人的等级和样式
+                    AllTiles[i, x].TileLevel = 0;
+                    AllTiles[i, x].TileType = ElementType.Empty;
+
+                    attack = true;      //关闭攻击开关
+                                        //消耗相应资源
+                    Power.Instance.Numerical = surplus;
+                    string str = "攻击消耗" + consume;
+                    Debug.Log(str);
+                }
+            }
+            #endregion
+        }
+    }
+
+    //管理合并开关（回合结束后
+    private void ResetMergedFlags()
+    {
+        //遍历所有的方块
+        foreach (Tile t in AllTiles)
+        {
+            t.mergedThisTurn = false;   //将他们标记为可合并，用于下回合的行动
+            t.isMove = false;           //将所有的方块标记为未移动
         }
     }
 
     #region 游戏胜负的判定
     //检查场上是否还存在敌人
-    bool HaveEnemy()
+    bool NotEnemy()
     {
         foreach(Tile t in AllTiles)
         {
