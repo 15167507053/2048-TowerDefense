@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
     {
         //新游戏开始
         over = true;    //游戏处于开启状态
-        turn = 3;       //第0回合开始
+        turn = 3;       //从第3回合开始（为了在三回合后 产生第一个敌人
 
         //游戏开始时清除场地
         Tile[] AllTilesOneDim = GameObject.FindObjectsOfType<Tile>();   //获取到所有的方块
@@ -159,32 +159,6 @@ public class GameManager : MonoBehaviour
         #endregion
     }
 
-    //检查是否还有可移动的方块
-    bool CanMove()
-    {
-        //无视剩余空方快大于零的情况
-        if (EmptyTiles.Count > 0)
-            return true;
-        //无视方块周围还有相同数字方块的情况
-        else
-        {
-            //check columns
-            //for (int i = 0; i < colums.Count; i++)
-            //    for (int j = 0; j < rows.Count - 1; j++)
-            //        if (AllTiles[j, i].Number == AllTiles[j + 1, i].Number)
-            //            return true;
-
-            ////check rows
-            //for (int i = 0; i < rows.Count; i++)
-            //    for (int j = 0; j < colums.Count - 1; j++)
-            //        if (AllTiles[i, j].Number == AllTiles[i, j + 1].Number)
-            //            return true;
-        }
-
-        //既没有空方快，也没有可以合并的方块时，游戏失败
-        return false;
-    }
-
     //更新空方块（在每次发生过移动之后）
     private void UpdateEmptyTiles()
     {
@@ -203,8 +177,6 @@ public class GameManager : MonoBehaviour
 
                 case ElementType.Tower:
                     //攻击塔
-                    //int x = t.indCol;   //max 7
-                    //int y = t.indRow;   //max 10
                     TowerAttack(t.indCol, t.indRow);
                     break;
 
@@ -215,7 +187,7 @@ public class GameManager : MonoBehaviour
 
                 case ElementType.Mall:
                     //获得金钱 （根据建筑等级？
-                    Money.Instance.Numerical += 10;
+                    Money.Instance.Numerical += 5;
                     break;
             }
         }
@@ -609,7 +581,7 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-    //移动方法 参数为获取到的移动方向 根据方向进行相应的移动
+    //获取到输入后的行为 参数为获取到的移动方向 根据方向进行相应的移动
     public void Move(MoveDirection md)
     {
         if (over)   //若游戏已经结束 不执行回合的行为
@@ -674,7 +646,13 @@ public class GameManager : MonoBehaviour
                     Generate(ElementType.Enemy);    //每五回合产生一个敌人
                 }
 
-                /// 9.游戏失败的判定
+                /// 9.游戏胜负的判定
+                //【30回合后】场上【不存在敌人】 则游戏胜利
+                if(turn > 32 && HaveEnemy())    //turn从3开始
+                {
+                    YouWon();
+                }
+
                 //如果电力不足
                 if (Power.Instance.Numerical <= 0)
                 {
@@ -691,6 +669,49 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    #region 游戏胜负的判定
+    //检查场上是否还存在敌人
+    bool HaveEnemy()
+    {
+        foreach(Tile t in AllTiles)
+        {
+            //如果还存在敌人
+            if (t.TileType == ElementType.Enemy)
+            {
+                return false;
+            }
+        }
+        //不存在敌人
+        return true;
+    }
+
+    //检查是否还有可移动的方块
+    bool CanMove()
+    {
+        //无视剩余空方快大于零的情况
+        if (EmptyTiles.Count > 0)
+            return true;
+        //无视方块周围还有相同数字方块的情况
+        else
+        {
+            //check columns
+            //for (int i = 0; i < colums.Count; i++)
+            //    for (int j = 0; j < rows.Count - 1; j++)
+            //        if (AllTiles[j, i].Number == AllTiles[j + 1, i].Number)
+            //            return true;
+
+            ////check rows
+            //for (int i = 0; i < rows.Count; i++)
+            //    for (int j = 0; j < colums.Count - 1; j++)
+            //        if (AllTiles[i, j].Number == AllTiles[i, j + 1].Number)
+            //            return true;
+        }
+
+        //既没有空方快，也没有可以合并的方块时，游戏失败
+        return false;
+    }
+    #endregion
 
     #region 游戏结束后的行为
     //游戏胜利界面
