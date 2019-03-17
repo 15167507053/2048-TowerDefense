@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 ///单个方块管理
-public class Tile : MonoBehaviour {
+public class Tile : MonoBehaviour
+{
 
     public bool mergedThisTurn = false;     //判断本回合是否已经进行过合并
 
@@ -67,7 +68,7 @@ public class Tile : MonoBehaviour {
         {
             TileText.text = TileLevel.ToString();    //更新单位的等级
         }
-        
+
     }
 
     //样式判断 以单位类型id作为参数 调用函数对方块的样式进行修改
@@ -162,7 +163,22 @@ public class Tile : MonoBehaviour {
     //自身的按钮事件
     public void Tilebtn()
     {
-        string s = indRow + "，" + indCol;
-        //EventManager.Instance.ConstructionOn(transform.position, s);    //显示建造面板
+        //若自身不为空 则无视输入
+        if (TileType == ElementType.Empty)
+        {
+            EventManager.Instance.x = indCol;
+            EventManager.Instance.y = indRow;
+
+            if (EventManager.Instance.Construction.activeSelf)
+            {
+                //如果菜单已经处于开启状态 将其关闭
+                EventManager.Instance.ConstructionOff();
+            }
+            else
+            {
+                EventManager.Instance.ConstructionOn(transform.position);    //显示建造面板
+            }
+        }
+
     }
 }
