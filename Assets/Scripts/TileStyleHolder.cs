@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 [System.Serializable]   //序列化
 public class TileStyle
-{   
+{
     public ElementType type;    //单位类型
     public Sprite image;        //单位样式
     //public int type;
@@ -13,7 +13,8 @@ public class TileStyle
 }
 
 ///定义方块的风格
-public class TileStyleHolder : MonoBehaviour {
+public class TileStyleHolder : MonoBehaviour
+{
 
     //单个方块
     public static TileStyleHolder Instance;
@@ -27,4 +28,3 @@ public class TileStyleHolder : MonoBehaviour {
         Instance = this;
     }
 }
- 

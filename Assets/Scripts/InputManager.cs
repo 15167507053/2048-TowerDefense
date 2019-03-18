@@ -9,8 +9,9 @@ public enum MoveDirection
 }
 
 ///侦测输入
-public class InputManager : MonoBehaviour {
-    
+public class InputManager : MonoBehaviour
+{
+
     private GameManager gm;     //用于调用gamemanager脚本的方法
 
     private void Awake()

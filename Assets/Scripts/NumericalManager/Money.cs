@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 ///各项资源数值管理
-public class Money : MonoBehaviour {
+public class Money : MonoBehaviour
+{
 
     private int money;      //金钱 可负债
 

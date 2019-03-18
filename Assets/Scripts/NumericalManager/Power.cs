@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 ///各项资源数值管理
-public class Power : MonoBehaviour {
+public class Power : MonoBehaviour
+{
 
     private int power;      //电力 <0时游戏失败
 

@@ -33,11 +33,27 @@ public class EventManager : MonoBehaviour
     {
         Debug.Log("悔棋");
     }
-
-    //重新游戏
+    //重新开始
     public void RestartBtn()
     {
-        Debug.Log("重新游戏");
+        Debug.Log("重新开始");
+
+        //如果已经获得了胜利 则保存分数
+        if (gm.won)
+        {
+            PlayerPrefs.SetInt("Account", Money.Instance.Numerical);
+        }
+
+        Application.LoadLevel(Application.loadedLevel); //重新开始
+    }
+    //重置本关
+    public void ResetBtn()
+    {
+        Debug.Log("重置");
+
+        //清空一切资产
+        PlayerPrefs.SetInt("Account", 100);
+
         Application.LoadLevel(Application.loadedLevel);
     }
 
@@ -57,7 +73,7 @@ public class EventManager : MonoBehaviour
 
         #region 处理面板溢出屏幕的情况
         //获取到自身的宽度和窗口的宽度
-        float selfWidth = Construction.GetComponent<RectTransform>().sizeDelta.x;
+        float selfWidth = Construction.GetComponent<RectTransform>().sizeDelta.x * transform.localScale.x;  //自身宽度 * 缩放比
         //float selfHeight = Construction.GetComponent<RectTransform>().sizeDelta.y;
 
         //左侧溢出 0 + 宽/2
@@ -76,6 +92,7 @@ public class EventManager : MonoBehaviour
     }
     public void ConstructionOff()
     {
+        gm.State = GameState.Playing;   //将游戏状态恢复到可以操作
         Construction.SetActive(false);
     }
     #endregion
@@ -86,8 +103,10 @@ public class EventManager : MonoBehaviour
     {
         //Debug.Log("攻击塔");
 
-        int MaterialPrice = 2 * 8;  //造价.建材 = 2的n倍
-        int MoneyPrice = 10 * 5;    //造价.金钱 = 10的n倍
+        int premium = gm.CountOff(ElementType.Tower) * 2;   //系数 造一座塔涨价 [x*2]
+        int MaterialPrice = 2 * 8;            //造价.建材 = 2的n倍 + 加价
+        int MoneyPrice = 10 * 5 + premium;    //造价.金钱 = 10的n倍 + 加价
+
         //如果有足够的建材进行建造
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {
@@ -107,14 +126,25 @@ public class EventManager : MonoBehaviour
         {
             enough(2);
         }
-        ConstructionOff();      //关闭建造菜单
+        //关闭建造菜单
+        ConstructionOff();
     }
     public void Power()
     {
         //Debug.Log("发电站");
 
-        int MaterialPrice = 2 * 2;
-        int MoneyPrice = 10 * 2;
+        int premium = gm.CountOff(ElementType.Power);
+        if (premium < 5)
+        {
+            premium = 0;
+        }
+        else
+        {
+            premium -= 3;
+        }
+        int MaterialPrice = 2 * 2 + premium;
+        int MoneyPrice = 10 * 1 + premium;
+
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {
             //gm.Generate(ElementType.Power);
@@ -137,8 +167,18 @@ public class EventManager : MonoBehaviour
     {
         //Debug.Log("商场");
 
-        int MaterialPrice = 2 * 4;
-        int MoneyPrice = 10 * 3;
+        int premium = gm.CountOff(ElementType.Mall);
+        if (premium < 3)
+        {
+            premium = 0;
+        }
+        else
+        {
+            premium -= 2;
+        }
+        int MaterialPrice = 2 * 3 + premium;
+        int MoneyPrice = 10 * 2 + premium;
+
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {
             //gm.Generate(ElementType.Mall);
@@ -157,12 +197,14 @@ public class EventManager : MonoBehaviour
         }
         ConstructionOff();
     }
+
     public void Wall()
     {
         //Debug.Log("防御墙");
 
         int MaterialPrice = 2 * 1;
-        int MoneyPrice = 10 * 1;
+        int MoneyPrice = 10 * 0;
+
         if (Material.Instance.Numerical - MaterialPrice >= 0)
         {
             //gm.Generate(ElementType.Wall);
@@ -183,11 +225,12 @@ public class EventManager : MonoBehaviour
     }
     public void Landmine()
     {
-        Debug.Log("地雷");
+        //Debug.Log("地雷");
 
         int MaterialPrice = 2 * 0;
         int MoneyPrice = 10 * 1;
-        if (Money.Instance.Numerical > 10)
+
+        if (Money.Instance.Numerical >= 10)
         {
             //gm.Generate(ElementType.Landmine);
             if (gm.Generate(ElementType.Landmine, x, y))
@@ -236,8 +279,8 @@ public class EventManager : MonoBehaviour
         OptionsPanel.SetActive(true);
 
         //暂停接受输入
-        //gm.State = GameState.GameSuspension;
-        gm.over = false;
+        gm.State = GameState.GameSuspension;
+        //gm.over = false;
     }
     //关闭菜单
     public void OptionsOff()
@@ -251,8 +294,8 @@ public class EventManager : MonoBehaviour
         OptionsPanel.SetActive(false);
 
         //重新接受输入
-        //gm.State = GameState.Playing;
-        gm.over = true;
+        gm.State = GameState.Playing;
+        //gm.over = true;
     }
 
     //说明文字

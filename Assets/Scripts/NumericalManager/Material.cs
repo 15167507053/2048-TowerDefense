@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 ///各项资源数值管理
-public class Material : MonoBehaviour {
+public class Material : MonoBehaviour
+{
 
     private int material;   //建材
 
