@@ -92,8 +92,19 @@ public class EventManager : MonoBehaviour
     }
     public void ConstructionOff()
     {
+        TouchInputManager.Instance.isSwipe = false; //打断触点的移动状态
+
+        //短时间内不接受移动输入操作
+        //float timer = Time.time;    //关闭菜单的时间
+        //while (Time.time - timer < 0.5)
+        //{
+        //    gm.State = GameState.Playing;
+        //    break;
+        //}
+        
         gm.State = GameState.Playing;   //将游戏状态恢复到可以操作
-        Construction.SetActive(false);
+
+        Construction.SetActive(false);  //关闭菜单
     }
     #endregion
 
@@ -275,31 +286,32 @@ public class EventManager : MonoBehaviour
     //菜单界面
     public void OptionsOn()
     {
-        //将菜单设为可见
-        OptionsPanel.SetActive(true);
+        defaultStyle();                 //恢复菜单的默认状态
 
-        //暂停接受输入
-        gm.State = GameState.GameSuspension;
+        OptionsPanel.SetActive(true);   //将菜单设为可见
+
+        gm.State = GameState.GameSuspension;    //暂停接受输入
         //gm.over = false;
     }
     //关闭菜单
     public void OptionsOff()
     {
-        //恢复菜单的默认状态
-        RuleText.SetActive(false);          //关闭规则文字
-        IntroductionText.SetActive(false);  //关闭说明文字
-        ButtonList.SetActive(true);         //恢复菜单面板上按键的显示
+        OptionsPanel.SetActive(false);  //关闭菜单面板
 
-        //关闭菜单面板
-        OptionsPanel.SetActive(false);
-
-        //重新接受输入
-        gm.State = GameState.Playing;
+        gm.State = GameState.Playing;   //重新接受输入
         //gm.over = true;
     }
 
+    //菜单的默认样式
+    private void defaultStyle()
+    {
+        RuleText.SetActive(false);          //关闭规则文字
+        IntroductionText.SetActive(false);  //关闭说明文字
+        ButtonList.SetActive(true);         //恢复菜单面板上按键的显示
+    }
+
     //说明文字
-    public void ruleOn()
+    public void RuleOn()
     {
         RuleText.SetActive(true);       //显示说明文字
         ButtonList.SetActive(false);    //隐藏菜单面板上的按键
@@ -309,6 +321,21 @@ public class EventManager : MonoBehaviour
     {
         IntroductionText.SetActive(true);
         ButtonList.SetActive(false);
+    }
+
+    //显示玩法
+    public void TempRule()
+    {
+        defaultStyle();
+        RuleOn();
+        OptionsPanel.SetActive(true);
+    }
+    //单位说明
+    public void TempIntro()
+    {
+        defaultStyle();
+        IntroductionOn();
+        OptionsPanel.SetActive(true);
     }
     #endregion
 

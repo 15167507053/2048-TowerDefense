@@ -698,7 +698,7 @@ public class GameManager : MonoBehaviour
                 case ElementType.Mall:
                     if (move)
                     {
-                        Money.Instance.Numerical += 10; //获得金钱 （根据建筑等级？
+                        Money.Instance.Numerical += 5; //获得金钱 （根据建筑等级？
                     }
                     break;
             }
