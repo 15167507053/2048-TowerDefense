@@ -264,12 +264,14 @@ public class GameManager : MonoBehaviour
                 //如果电力不足
                 if (Power.Instance.Numerical <= 0)
                 {
-                    GameOver("电力不足");//显示游戏结束消息
+                    //GameOver("电力不足");    //显示游戏结束消息
+                    GameOver("電力が足りない");
                 }
                 //或是没有可移动的方块
                 else if (!CanMove())
                 {
-                    GameOver("没有可移动的方块");
+                    //GameOver("没有可移动的方块");
+                    GameOver("移動できるコマがない");
                 }
 
                 /// 0.回合结束
@@ -324,7 +326,8 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i + 1].TileType == ElementType.Enemy &&
                             LineOfTiles[i + 1].mergedThisTurn == false && LineOfTiles[i + 1].moveThisTurn == true)
                         {
-                            GameOver("玩家受到攻击"); //游戏失败
+                            //GameOver("玩家受到攻击"); //游戏失败
+                            GameOver("プレーヤーが攻撃された");
                             return false; ;
                         }
                         //不与其他单位发生事件
@@ -397,7 +400,7 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i + 1].TileType == ElementType.Enemy)
                         {
                             //被8级以下敌人碰撞 毁灭敌人和自身
-                            if (LineOfTiles[i + 1].TileLevel <= 8)
+                            if (LineOfTiles[i + 1].TileLevel < 8)
                             {
                                 LineOfTiles[i].TileType = ElementType.Empty;    //销毁自身
                                 LineOfTiles[i + 1].TileLevel = 0;               //清空敌人的等级
@@ -521,7 +524,8 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i - 1].TileType == ElementType.Enemy &&
                             LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[i - 1].moveThisTurn == true)
                         {
-                            GameOver("玩家受到攻击");
+                            //GameOver("玩家受到攻击");
+                            GameOver("プレーヤーが攻撃された");
                             return false; ;
                         }
                         break;
@@ -586,7 +590,7 @@ public class GameManager : MonoBehaviour
                     case ElementType.Landmine:
                         if (LineOfTiles[i - 1].TileType == ElementType.Enemy)
                         {
-                            if (LineOfTiles[i + 1].TileLevel <= 8)
+                            if (LineOfTiles[i + 1].TileLevel < 8)
                             {
                                 LineOfTiles[i].TileType = ElementType.Empty;
                                 LineOfTiles[i - 1].TileLevel = 0;
@@ -879,7 +883,8 @@ public class GameManager : MonoBehaviour
 
         int score = Money.Instance.Numerical - PlayerPrefs.GetInt("Account");   //分数 = 过关后金钱 - 上一局剩余金钱
         PlayerPrefs.SetInt("Account", Money.Instance.Numerical);                //胜利后更新剩余金钱
-        MessageText.text = "你赚到了\n" + score + "\n的金钱";                   //显示分数
+        //MessageText.text = "你赚到了\n" + score + "\n的金钱";                   //显示分数
+        MessageText.text = "あなたは\n" + score + "\nのお金を手に入れた";
     }
     //继续游戏
     public void ContinueGame()
