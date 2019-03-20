@@ -34,9 +34,10 @@ public class GameManager : MonoBehaviour
 
     //public bool over = false;   //游戏是否结束
     public bool won = false;   //游戏是否已经胜利
+    public int count = 0;     //记录本关内地雷的建造数量
     private bool move = false; //玩家是否发生过移动
     private int turn = 0;      //记录回合数
-
+    
     # region 行列与方块列表
 
     //用于获取所有的方块 
@@ -67,6 +68,7 @@ public class GameManager : MonoBehaviour
         won = false;    //本关还未取得胜利
         move = false;
         turn = 3;       //从第3回合开始（为了在三回合后 产生第一个敌人
+        count = 0;      //地雷还未建造过
 
         //游戏开始时清除场地
         Tile[] AllTilesOneDim = GameObject.FindObjectsOfType<Tile>();   //获取到所有的方块
@@ -400,7 +402,7 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i + 1].TileType == ElementType.Enemy)
                         {
                             //被8级以下敌人碰撞 毁灭敌人和自身
-                            if (LineOfTiles[i + 1].TileLevel < 8)
+                            if (LineOfTiles[i + 1].TileLevel <= 8)
                             {
                                 LineOfTiles[i].TileType = ElementType.Empty;    //销毁自身
                                 LineOfTiles[i + 1].TileLevel = 0;               //清空敌人的等级
@@ -590,7 +592,7 @@ public class GameManager : MonoBehaviour
                     case ElementType.Landmine:
                         if (LineOfTiles[i - 1].TileType == ElementType.Enemy)
                         {
-                            if (LineOfTiles[i + 1].TileLevel < 8)
+                            if (LineOfTiles[i + 1].TileLevel <= 8)
                             {
                                 LineOfTiles[i].TileType = ElementType.Empty;
                                 LineOfTiles[i - 1].TileLevel = 0;

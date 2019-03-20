@@ -12,6 +12,7 @@ public class EventManager : MonoBehaviour
 
     #region 游戏对象
     public GameObject Construction;     //建造菜单
+    public GameObject MessageBox;       //建筑说明面板
 
     public GameObject OptionsPanel;     //菜单面板
     public GameObject ButtonList;       //默认的按钮面板
@@ -65,6 +66,8 @@ public class EventManager : MonoBehaviour
     //并不直接通过按钮调用 而是【按钮调用tile脚本的函数后】再调用本函数发生事件
     public void ConstructionOn(Vector3 position)
     {
+        TouchInputManager.Instance.isSwipe = false; //打断触点的移动状态
+
         //控制台输出方块的（x,y）
         //string s = x + "，" + y;
         //Debug.Log(s);
@@ -92,8 +95,6 @@ public class EventManager : MonoBehaviour
     }
     public void ConstructionOff()
     {
-        TouchInputManager.Instance.isSwipe = false; //打断触点的移动状态
-
         //短时间内不接受移动输入操作
         //float timer = Time.time;    //关闭菜单的时间
         //while (Time.time - timer < 0.5)
@@ -101,11 +102,43 @@ public class EventManager : MonoBehaviour
         //    gm.State = GameState.Playing;
         //    break;
         //}
-        
+
         gm.State = GameState.Playing;   //将游戏状态恢复到可以操作
 
+        MessageBox.SetActive(false);    //关闭建筑的说明面板
         Construction.SetActive(false);  //关闭菜单
     }
+
+    //建筑说明面板 非按钮事件 在建造按钮被按下后触发 参数是按钮指向的建筑类型
+    private void MessageBoxOn(ElementType type)
+    {
+        switch (type)
+        {
+            case ElementType.Tower:
+                //载入建筑说明文字
+                //载入建造价格 和 判断并显示是否可建造
+                //若不可建造 隐藏建造按钮
+                //显示面板
+                break;
+            case ElementType.Landmine:
+                break;
+            case ElementType.Wall:
+                break;
+            case ElementType.Power:
+                break;
+            case ElementType.Mall:
+                break;
+        }
+        MessageBox.SetActive(true);     //设为可见
+        //在取消建造菜单、或是建造成功后关闭面板
+    }
+
+    //确认建造按钮
+    public void Confirm()
+    {
+
+    }
+
     #endregion
 
     #region 建造
@@ -140,6 +173,59 @@ public class EventManager : MonoBehaviour
         //关闭建造菜单
         ConstructionOff();
     }
+    public void Wall()
+    {
+        //Debug.Log("防御墙");
+
+        int MaterialPrice = 2 * 1;
+        int MoneyPrice = 10 * 0;
+
+        if (Material.Instance.Numerical - MaterialPrice >= 0)
+        {
+            //gm.Generate(ElementType.Wall);
+            if (gm.Generate(ElementType.Wall, x, y))
+            {
+                Consume(MaterialPrice, MoneyPrice);
+            }
+            else
+            {
+                enough(1);
+            }
+        }
+        else
+        {
+            enough(2);
+        }
+        ConstructionOff();
+    }
+    public void Landmine()
+    {
+        //Debug.Log("地雷");
+
+        int premium = 5 * gm.count;    //每造一个雷贵10块
+        int MaterialPrice = 2 * 0;
+        int MoneyPrice = 10 * 1 + premium;
+
+        if (Money.Instance.Numerical >= 10)
+        {
+            //gm.Generate(ElementType.Landmine);
+            if (gm.Generate(ElementType.Landmine, x, y))
+            {
+                Consume(MaterialPrice, MoneyPrice);
+                gm.count++;
+            }
+            else
+            {
+                enough(1);
+            }
+        }
+        else
+        {
+            enough(2);
+        }
+        ConstructionOff();
+    }
+
     public void Power()
     {
         //Debug.Log("发电站");
@@ -209,64 +295,12 @@ public class EventManager : MonoBehaviour
         ConstructionOff();
     }
 
-    public void Wall()
-    {
-        //Debug.Log("防御墙");
-
-        int MaterialPrice = 2 * 1;
-        int MoneyPrice = 10 * 0;
-
-        if (Material.Instance.Numerical - MaterialPrice >= 0)
-        {
-            //gm.Generate(ElementType.Wall);
-            if (gm.Generate(ElementType.Wall, x, y))
-            {
-                Consume(MaterialPrice, MoneyPrice);
-            }
-            else
-            {
-                enough(1);
-            }
-        }
-        else
-        {
-            enough(2);
-        }
-        ConstructionOff();
-    }
-    public void Landmine()
-    {
-        //Debug.Log("地雷");
-
-        int MaterialPrice = 2 * 0;
-        int MoneyPrice = 10 * 1;
-
-        if (Money.Instance.Numerical >= 10)
-        {
-            //gm.Generate(ElementType.Landmine);
-            if (gm.Generate(ElementType.Landmine, x, y))
-            {
-                Consume(MaterialPrice, MoneyPrice);
-            }
-            else
-            {
-                enough(1);
-            }
-        }
-        else
-        {
-            enough(2);
-        }
-        ConstructionOff();
-    }
-
     //消耗资源
     private void Consume(int MaterialPrice, int MoneyPrice)
     {
         Material.Instance.Numerical -= MaterialPrice;   //减去相应的建材
         Money.Instance.Numerical -= MoneyPrice;         //减去相应的金钱（可负债
     }
-
     //造价不足时的提示信息
     private void enough(int m)
     {
