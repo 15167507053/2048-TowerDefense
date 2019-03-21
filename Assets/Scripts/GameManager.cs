@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour
     # region 行列与方块列表
 
     //用于获取所有的方块 
-    private Tile[,] AllTiles = new Tile[11, 8];
+    public Tile[,] AllTiles = new Tile[11, 8];
 
     //创建行和列的列表 用于移动
     private List<Tile[]> colums = new List<Tile[]>();
@@ -940,9 +940,9 @@ public class GameManager : MonoBehaviour
         //获得大量资源
         else if (Input.GetKeyDown(KeyCode.L))
         {
-            Material.Instance.Numerical += 5000;  //获得建材
-            Power.Instance.Numerical += 5000;     //获得电力
-            Money.Instance.Numerical += 5000;     //获得金钱
+            Material.Instance.Numerical += 3000;  //获得建材
+            Power.Instance.Numerical += 3000;     //获得电力
+            Money.Instance.Numerical += 3000;     //获得金钱
         }
     }
 

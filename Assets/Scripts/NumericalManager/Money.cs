@@ -35,7 +35,7 @@ public class Money : MonoBehaviour
 
         ///初始化面板
         //如果是第一次进行游戏 则初始化金钱为100
-        if (!PlayerPrefs.HasKey("Account"))
+        if (!PlayerPrefs.HasKey("Account") || PlayerPrefs.GetInt("Account") >= 3000)
         {
             PlayerPrefs.SetInt("Account", 100);
         }
