@@ -15,6 +15,8 @@ public class EventManager : MonoBehaviour
     public GameObject MessageBox;       //建筑说明面板
     public Text Message;                //说明文字
     public GameObject Confirm;          //建造确认
+    public GameObject Tile;             //用于测距
+    //public GameObject MessageCloseBtn;     //关闭说明面板
 
     public GameObject OptionsPanel;     //菜单面板
     public GameObject ButtonList;       //默认的按钮面板
@@ -125,6 +127,8 @@ public class EventManager : MonoBehaviour
     public int y;
 
     private Vector3 pos;     //菜单坐标
+    private bool isAdjustment = false;  //是否已经发生过调整
+    //private bool divide = false;    //记录是否已经根据上下屏调整过pos
 
     private ElementType type;   //被建造的建筑
     private int MaterialPrice = 0;  //造价.建材
@@ -135,7 +139,6 @@ public class EventManager : MonoBehaviour
     {
         TouchInputManager.Instance.isSwipe = false; //打断触点的移动状态
 
-        //设为可见
         #region 处理面板溢出屏幕的情况
         //获取到自身的宽度和窗口的宽度
         float selfWidth = Construction.GetComponent<RectTransform>().sizeDelta.x * transform.localScale.x;  //自身宽度 * 缩放比
@@ -152,15 +155,20 @@ public class EventManager : MonoBehaviour
             position.x = Screen.width - selfWidth / 2;
         }
         #endregion
+
+        pos = position;
         #region 当触点发生在上半屏时 将面板位于触点下方显示
-        //float selfHeight = Construction.GetComponent<RectTransform>().sizeDelta.y * transform.localScale.y;
-        //if (position.y - selfHeight > Screen.height / 2)
-        //{
-        //    position.y -= selfHeight * 2;
-        //}
+        float selfHeight = (Tile.GetComponent<RectTransform>().sizeDelta.y + 2) * transform.localScale.y;   //获取一个格子的高度
+        //如果触点在上半屏(*2是为了不包括中间一行 下6上5
+        if (position.y - selfHeight * 2 > Screen.height / 2)
+        {
+            position.y -= selfHeight * 2;   //将面板的坐标向下移动一个单位的距离
+            //divide = true;
+        }
         #endregion
 
-        Construction.transform.position = pos = position;     //指定坐标跟随
+        //设为可见
+        Construction.transform.position = position;     //指定坐标跟随
         Construction.SetActive(true);       //显示面板
     }
     public void ConstructionOff()
@@ -178,7 +186,7 @@ public class EventManager : MonoBehaviour
 
         gm.State = GameState.Playing;   //将游戏状态恢复到可以操作
 
-        MessageBox.SetActive(false);    //关闭建筑的说明面板
+        MessageClose();                 //关闭建筑的说明面板
         Construction.SetActive(false);  //关闭菜单
     }
 
@@ -250,18 +258,19 @@ public class EventManager : MonoBehaviour
     //说明面板 非按钮事件 在建造按钮被按下后触发 参数是按钮指向的建筑类型 以及显示坐标
     private void MessageBoxOn(ElementType type)
     {
-        string s1 = ""; //名称
-        string s2 = ""; //效果
+        //string s1 = ""; //名称
+        string s2 = ""; //说明
         string s3 = "\n 建材：" + MaterialPrice + " , お金：" + MoneyPrice; //造价
         string s4 = ""; //可否建造
 
+        //设置信息文字
         switch (type)
         {
             case ElementType.Tower:
                 #region 塔
                 //载入建筑说明文字
-                s1 = "<b> 攻撃タワー </b>";
-                s2 = "\n 毎ターンは自身の左右上下直線３単位内の「敵」を一体攻撃します。攻撃の際、敵レベル×2の電力を消耗します、しかも、もし消耗していたら、残りの電力が20以下になってしまう場合は、攻撃しません";
+                //s1 = "<b> 攻撃タワー </b>";
+                s2 = document(ElementType.Tower);
 
                 //判断是否可建造
                 if (Material.Instance.Numerical - MaterialPrice < 0)
@@ -285,8 +294,8 @@ public class EventManager : MonoBehaviour
 
             case ElementType.Landmine:
                 #region 地
-                s1 = "<b> 地雷 </b>";
-                s2 = "\n レベル８以下の「敵」に踏まれたら、自分と「敵」一緒に消滅します、レベル８以上の「敵」だったら、自分の消滅と共に、「敵」の動きを止め、そのレベルを半分にします、値段は10金ずつ増えます";
+                //s1 = "<b> 地雷 </b>";
+                s2 = document(ElementType.Landmine);
 
                 if (Money.Instance.Numerical - MoneyPrice < 0)
                 {
@@ -303,8 +312,8 @@ public class EventManager : MonoBehaviour
 
             case ElementType.Wall:
                 #region 墙
-                s1 = "<b> 防御壁 </b>";
-                s2 = "\n 壁は単純に全てのコマを移動を阻止するだけ、他のイベントはありません。";
+                //s1 = "<b> 防御壁 </b>";
+                s2 = document(ElementType.Wall);
 
                 if (Material.Instance.Numerical - MaterialPrice < 0)
                 {
@@ -321,8 +330,8 @@ public class EventManager : MonoBehaviour
 
             case ElementType.Power:
                 #region 电
-                s1 = "<b> 発電所 </b>";
-                s2 = "\n ボードに存在する発電所は、一個で毎ターン10点電力を提供します。ただし、「主」は移動していないターンは資源を提供しません。";
+                //s1 = "<b> 発電所 </b>";
+                s2 = document(ElementType.Power);
 
                 if (Material.Instance.Numerical - MaterialPrice < 0)
                 {
@@ -339,8 +348,8 @@ public class EventManager : MonoBehaviour
 
             case ElementType.Mall:
                 #region 商
-                s1 = "<b> 商店 </b>";
-                s2 = "\n ボードに存在する商店は、一個で毎ターン５点お金を提供します。「主」は移動していないターンは資源を提供しません。";
+                //s1 = "<b> 商店 </b>";
+                s2 = document(ElementType.Mall);
 
                 if (Material.Instance.Numerical - MaterialPrice < 0)
                 {
@@ -355,19 +364,56 @@ public class EventManager : MonoBehaviour
                 #endregion
                 break;
         }
-        //设置信息文字
-        Message.text = s1 + s2 + s3 + s4;
+        //Message.text = s1 + s2 + s3 + s4;
+        Message.text = s2 + s3 + s4;
 
+        #region 设定信息面板的位置
+        //pos = Construction.transform.position;      //首先先恢复pos的位置
+        float selfHeight = MessageBox.GetComponent<RectTransform>().sizeDelta.y * transform.localScale.y;   //获取自身的高度
+        float tileHeight = Tile.GetComponent<RectTransform>().sizeDelta.y * transform.localScale.y;         //格子的高度
+        float MenuHeight = Construction.GetComponent<RectTransform>().sizeDelta.y * transform.localScale.y; //菜单的高度
+
+        //仅在第一次修正坐标的位置
+        if (!isAdjustment)
+        {
+            //如果在上半屏 使其出现在下方 判断坐标 = pos - 菜单高度（菜单高度/2 + 格子高度/2）
+            if (pos.y - MenuHeight * 2 > Screen.height / 2)
+            {
+                pos.y = (pos.y - tileHeight * 2 - MenuHeight / 2) - selfHeight / 2;
+            }
+            //如果在下半屏 使其出现在上方
+            else
+            {
+                //设定坐标 = pos（菜单坐标） + 方块高度/2 + 信息窗高度/2
+                pos.y = (pos.y + tileHeight / 2) + selfHeight / 2;
+            }
+            isAdjustment = true;
+        }
+
+        //处理下侧溢 (纵坐标-高度/2 < 0
+        if (pos.y - selfHeight / 2 < 0)
+        {
+            pos.y = selfHeight / 2;
+        }
+        //上侧溢出（暂时不管
+        #endregion
         //将面板设为可见
         MessageBox.transform.position = pos;    //坐标跟随
         MessageBox.SetActive(true);             //设为可见
     }
     //在取消建造菜单、或是建造成功后关闭面板
+    public void MessageClose()
+    {
+        //MessageCloseBtn.SetActive(false);     //隐藏关闭按钮
+        MessageBox.SetActive(false);            //关闭面板
+        pos = new Vector3(Screen.width / 2, Screen.height / 2, 0);  //恢复坐标的位置
+        isAdjustment = false;   //恢复为没有调整过坐标的状态
+    }
 
     //确认建造按钮
     public void ConfirmBtn()
     {
-        MessageBox.SetActive(false);    //关闭说明面板
+        MessageClose();    //关闭说明面板
         ConstructionOff();              //关闭建造菜单
 
         //消耗资源
@@ -376,6 +422,67 @@ public class EventManager : MonoBehaviour
 
         //根据类型调用建造函数
         gm.Generate(type, x, y);
+    }
+    #endregion
+
+    #region 说明文档
+    private string document(ElementType type)
+    {
+        string s = "";  //说明文字
+        switch (type)
+        {
+            case ElementType.Player:
+                s = "<b>主人公</b>\n ボード上に移動しながら、「建」を取集する。「敵」に突き当たられたらGameOverになります";
+                break;
+
+            case ElementType.Material:
+                s = "<b>建材</b>\n これを取集するのはゲームのメイン内容です。同レベルの同類が接触したら、レベルを2倍にして合併します。「主」と「建」が接触したら、その「建」レベル分の点数をもらえる。その用途は【資源の説明】一節で説明します。ゲーム開始の時ボード上ランダムの位置に2個がいて、その後毎ターン１個が出てきます";
+                break;
+
+            case ElementType.Enemy:
+                s = "<b>敵</b>\n 同レベルの同類が接触したら、レベルを2倍にして合併します。壁以外のコマに突き当たたら、それを壊します。ゲーム開始の3ターン後ランダムの位置に1体出現、その後毎５ターン1体を出現します";
+                break;
+
+            case ElementType.Power:
+                s = "<b> 発電所 </b>\n ボードに存在する発電所は、一個で毎ターン10点電力を提供します。ただし、「主」は移動していないターンは資源を提供しません";
+                break;
+
+            case ElementType.Mall:
+                s = "<b> 商店 </b>\n ボードに存在する商店は、一個で毎ターン５点お金を提供します。「主」は移動していないターンは資源を提供しません";
+                break;
+
+            case ElementType.Wall:
+                s = "<b> 防御壁 </b>\n 壁は単純に全てのコマを移動を阻止するだけ、他のイベントはありません";
+                break;
+
+            case ElementType.Landmine:
+                s = "<b> 地雷 </b>\n レベル８以下の「敵」に踏まれたら、自分と「敵」一緒に消滅します、レベル８以上の「敵」だったら、自分の消滅と共に、「敵」の動きを止め、そのレベルを半分にします、値段は10金ずつ増えます";
+                break;
+
+            case ElementType.Tower:
+                s = "<b> 攻撃タワー </b>\n 毎ターンは自身の左右上下直線３単位内の「敵」を一体攻撃します。攻撃の際、敵レベル×2の電力を消耗します、しかも、もし消耗していたら、残りの電力が20以下になってしまう場合は、攻撃しません";
+                break;
+
+            default:
+                s = "まだ準備出来ていない";
+                break;
+        }
+        return s;
+    }
+
+    //在非空方块被点击时 显示说明文件
+    public void other(ElementType type)
+    {
+        //如果建造菜单被打开 将其关闭
+        ConstructionOff();
+
+        //显示面板
+        string s = document(type);  //获得介绍文字
+        Message.text = s;           //更新文字
+        MessageBox.transform.position = pos;    //指定面板的位置（屏幕中心）
+        MessageBox.SetActive(true); //显示信息面板
+        Confirm.SetActive(false);   //隐藏确认按钮
+        //MessageCloseBtn.SetActive(true); //显示关闭按钮
     }
     #endregion
 

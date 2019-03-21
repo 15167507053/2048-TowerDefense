@@ -196,6 +196,11 @@ public class Tile : MonoBehaviour
                 EventManager.Instance.ConstructionOn(transform.position);    //显示建造面板
             }
         }
-
+        //若不为空 则显示内容介绍
+        else
+        {
+            EventManager.Instance.other(TileType);
+        }
     }
+
 }
