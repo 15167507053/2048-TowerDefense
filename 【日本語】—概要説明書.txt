@@ -2,7 +2,7 @@
 	https://github.com/15167507053/2048-TowerDefense
 
 【ダウンロード】
-	https://drive.google.com/open?id=10hP0msYJrzt6GMez8kw9APJoiY2UHYga
+	https://drive.google.com/open?id=1n9EiwjL1DfSkAGCzCGtUMjYQsaxmDkdw
 
 【実行環境】
 	Windows 7/8/10	demo.exe + demo_Data(ファルダ)
