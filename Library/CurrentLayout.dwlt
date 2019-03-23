@@ -401,7 +401,7 @@ MonoBehaviour:
   m_LastFolders:
   - Assets/Scripts
   m_LastFoldersGridSize: -1
-  m_LastProjectPath: D:\User\2048\Demo
+  m_LastProjectPath: "D:\\User\\2048\\[\u4E3A\u4E86\u80FD\u591F\u5728\u9762\u8BD5\u5DE5\u4F5C\u7684\u65F6\u5019\u62FF\u5F97\u51FAdemo\u7684\u6211\u53EA\u597D\u5728\u5927\u5B66\u7684\u6700\u540E\u4E00\u4E2A\u6625\u5047\u5F00\u59CB\u6478\u7D22\u7740\u505A\u4E2A\u4E22\u4EBA\u7684\u8FA3\u9E21\u6E38\u620F\\Demo"
   m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
@@ -551,9 +551,9 @@ MonoBehaviour:
     height: 439
   m_TreeViewState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 38060000
+    m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: e4fbffff00000000082e0000ac350000
+    m_ExpandedIDs: 467cffff027dffffbe7dffffd084ffff8a85ffff4a86ffff5ac5ffff12c6ffffcec6ffffe4fbffff00000000442b0000082e0000de2f0000de300000ac350000823a0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
