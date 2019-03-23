@@ -185,7 +185,6 @@ public class Tile : MonoBehaviour
             else
             {
                 //TileImage.sprite = Resources.Load<Sprite>("Select");      //将自身样式改为【选中】
-                gm.State = GameState.GameSuspension;        //暂停不接受移动性的输入
 
                 //更改样式为选中（通过禁用自身
                 this.GetComponent<Button>().interactable = false;

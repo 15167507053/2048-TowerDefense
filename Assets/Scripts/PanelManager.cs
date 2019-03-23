@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class PanelManager : MonoBehaviour
 {
     private GameManager gm;
-
     public static PanelManager Instance;
 
     #region 胜利或失败面板

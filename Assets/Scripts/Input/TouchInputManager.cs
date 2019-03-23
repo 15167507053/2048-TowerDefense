@@ -111,6 +111,11 @@ public class TouchInputManager : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            //如果中断了游戏状态 则清空触点信息
+            isSwipe = false;
+        }
 
     }
 }
