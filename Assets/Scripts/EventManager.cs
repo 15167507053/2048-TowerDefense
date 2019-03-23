@@ -255,7 +255,14 @@ public class EventManager : MonoBehaviour
         //MessageCloseBtn.SetActive(false);     //隐藏关闭按钮
         MessageBox.SetActive(false);    //关闭面板
         MsgPos = MenuPos;               //恢复坐标的位置
-        isAdjustment = false;   //恢复为没有调整过坐标的状态
+        isAdjustment = false;           //恢复为没有调整过坐标的状态
+
+        //如果建造菜单还处于打开状态 则不回复可造作状态
+        if (!Construction.active)
+        {
+            gm.State = GameState.Playing;   //恢复可以接受操作的状态
+        }
+
     }
 
     //确认建造按钮
@@ -386,8 +393,8 @@ public class EventManager : MonoBehaviour
     //在非空方块被点击时 显示说明文件
     public void other(ElementType type)
     {
-        //如果建造菜单被打开 将其关闭
-        ConstructionOff();
+        ConstructionOff();      //如果建造菜单被打开 将其关闭
+        gm.State = GameState.GameSuspension;    //暂停接受输入
 
         //显示面板
         string s = document(type);  //获得介绍文字
