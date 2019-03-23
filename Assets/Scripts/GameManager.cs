@@ -37,8 +37,8 @@ public class GameManager : MonoBehaviour
     public int count = 0;     //记录本关内地雷的建造数量
     private bool move = false; //玩家是否发生过移动
     private int turn = 0;      //记录回合数
-    
-    # region 行列与方块列表
+
+    #region 行列与方块列表
 
     //用于获取所有的方块 
     public Tile[,] AllTiles = new Tile[11, 8];
@@ -50,13 +50,6 @@ public class GameManager : MonoBehaviour
     //用于获取空方快 在产生新方块时用于标识
     private List<Tile> EmptyTiles = new List<Tile>();
 
-    #endregion
-
-    # region 胜利或失败面板
-    public Text TitleText;              //胜利或失败的文字
-    public Text MessageText;            //失败理由/胜利积分
-    public GameObject GameOverPanel;    //结束面板
-    public GameObject ContinueBtn;      //继续游戏按钮 仅在游戏胜利时显示
     #endregion
 
     /// 1.新游戏开始时的初始化
@@ -260,20 +253,20 @@ public class GameManager : MonoBehaviour
                 //【30回合后】场上【不存在敌人】 则游戏胜利 但仅限于第一次获得胜利的情况
                 if (!won && turn > 32 && NotEnemy())    //turn从3开始
                 {
-                    YouWon();
+                    PanelManager.Instance.YouWon();
                 }
 
                 //如果电力不足
                 if (Power.Instance.Numerical <= 0)
                 {
                     //GameOver("电力不足");    //显示游戏结束消息
-                    GameOver("電力が足りない");
+                    PanelManager.Instance.GameOver("電力が足りない");
                 }
                 //或是没有可移动的方块
                 else if (!CanMove())
                 {
                     //GameOver("没有可移动的方块");
-                    GameOver("移動できるコマがない");
+                    PanelManager.Instance.GameOver("移動できるコマがない");
                 }
 
                 /// 0.回合结束
@@ -329,7 +322,7 @@ public class GameManager : MonoBehaviour
                             LineOfTiles[i + 1].mergedThisTurn == false && LineOfTiles[i + 1].moveThisTurn == true)
                         {
                             //GameOver("玩家受到攻击"); //游戏失败
-                            GameOver("プレーヤーが攻撃された");
+                            PanelManager.Instance.GameOver("プレーヤーが攻撃された");
                             return false; ;
                         }
                         //不与其他单位发生事件
@@ -527,7 +520,7 @@ public class GameManager : MonoBehaviour
                             LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[i - 1].moveThisTurn == true)
                         {
                             //GameOver("玩家受到攻击");
-                            GameOver("プレーヤーが攻撃された");
+                            PanelManager.Instance.GameOver("プレーヤーが攻撃された");
                             return false; ;
                         }
                         break;
@@ -852,63 +845,16 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    #region 游戏结束后的行为
-    //失败提示界面
-    public void GameOver(string s)
-    {
-        //over = false;
-        State = GameState.GameSuspension;
-
-        //如果失败时资产小于0 则将其归为100
-        //if(Money.Instance.Numerical < 0)
-        //{
-        //    PlayerPrefs.SetInt("Account", 100);
-        //}
-
-        TitleText.text = "Game Over";
-        ContinueBtn.SetActive(false);
-        GameOverPanel.SetActive(true);
-
-        PlayerPrefs.SetInt("Account", Money.Instance.Numerical);    //记录游戏失败时的资源
-
-        MessageText.text = s;
-    }
-    //游戏胜利界面
-    public void YouWon()
-    {
-        //over = false;                   //禁止接受输入
-        State = GameState.GameSuspension;
-
-        TitleText.text = "You Won";     //标题文字改为胜利
-        ContinueBtn.SetActive(true);    //显示继续按钮
-        GameOverPanel.SetActive(true);  //开启提示面板
-
-        int score = Money.Instance.Numerical - PlayerPrefs.GetInt("Account");   //分数 = 过关后金钱 - 上一局剩余金钱
-        PlayerPrefs.SetInt("Account", Money.Instance.Numerical);                //胜利后更新剩余金钱
-        //MessageText.text = "你赚到了\n" + score + "\n的金钱";                   //显示分数
-        MessageText.text = "あなたは\n" + score + "\nのお金を手に入れた";
-    }
-    //继续游戏
-    public void ContinueGame()
-    {
-        Debug.Log("继续游戏");
-        won = true;    //本关内不再显示胜利面板
-        //over = true;   //游戏继续
-        State = GameState.Playing;
-        GameOverPanel.SetActive(false);
-    }
-    #endregion
-
     //debug用
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            YouWon();
+            PanelManager.Instance.YouWon();
         }
         else if (Input.GetKeyDown(KeyCode.W))
         {
-            GameOver("手动结束");
+            PanelManager.Instance.GameOver("手动结束");
         }
         //清空所有可移动的单位
         else if (Input.GetKeyDown(KeyCode.Z))
