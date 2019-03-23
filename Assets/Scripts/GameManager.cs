@@ -778,7 +778,7 @@ public class GameManager : MonoBehaviour
                 {
                     //清空敌人的等级和样式
                     AllTiles[i, x].TileLevel = 0;
-                    AllTiles[i, x].TileType = type;
+                    AllTiles[i, x].TileType = ElementType.Empty;
 
                     attack = true;      //关闭攻击开关
                                         //消耗相应资源

@@ -42,7 +42,8 @@ public class EventManager : MonoBehaviour
     //建造菜单 并不直接通过按钮调用 而是【按钮调用tile脚本的函数后】再调用本函数发生事件
     public void ConstructionOn(Vector3 position)
     {
-        TouchInputManager.Instance.isSwipe = false; //打断触点的移动状态
+        gm.State = GameState.GameSuspension;        //暂停不接受移动性的输入
+        //TouchInputManager.Instance.isSwipe = false; //打断触点的移动状态
 
         #region 处理面板溢出屏幕的情况
         float selfWidth = Construction.GetComponent<RectTransform>().sizeDelta.x * transform.localScale.x;  //自身宽度 * 缩放比
