@@ -33,7 +33,7 @@ public class AutoGridLayout : GridLayoutGroup
             iColumn = Mathf.CeilToInt(this.transform.childCount / iRow);
         }
         float fHeight = (rectTransform.rect.height - ((iRow - 1) * (spacing.y))) - ((padding.top + padding.bottom));
-        float fWidth = (rectTransform.rect.width - ((iColumn - 1) * (spacing.x))) - ( (padding.right + padding.left));
+        float fWidth = (rectTransform.rect.width - ((iColumn - 1) * (spacing.x))) - ((padding.right + padding.left));
         Vector2 vSize = new Vector2(fWidth / iColumn, (fHeight) / iRow);
         cellSize = vSize;
     }

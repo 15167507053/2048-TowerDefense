@@ -10,19 +10,12 @@ public class EventManager : MonoBehaviour
 
     private GameManager gm;     //用于调用gamemanager脚本的方法
 
-    #region 游戏对象
+    public GameObject Tile;             //用于测距
     public GameObject Construction;     //建造菜单
     public GameObject MessageBox;       //建筑说明面板
-    public Text Message;                //说明文字
     public GameObject Confirm;          //建造确认
-    public GameObject Tile;             //用于测距
+    public Text Message;                //说明文字
     //public GameObject MessageCloseBtn;     //关闭说明面板
-
-    public GameObject OptionsPanel;     //菜单面板
-    public GameObject ButtonList;       //默认的按钮面板
-    public GameObject RuleText;         //规则说明
-    public GameObject IntroductionText; //单位说明
-    #endregion
 
     void Awake()
     {
@@ -33,116 +26,26 @@ public class EventManager : MonoBehaviour
         gm = FindObjectOfType<GameManager>();
     }
 
-    #region 菜单功能
-    //悔棋
-    public void RegretBtn()
-    {
-        Debug.Log("悔棋");
-    }
-    //重新开始
-    public void RestartBtn()
-    {
-        Debug.Log("重新开始");
-
-        //如果已经获得了胜利 则保存分数
-        if (gm.won)
-        {
-            PlayerPrefs.SetInt("Account", Money.Instance.Numerical);
-        }
-
-        Application.LoadLevel(Application.loadedLevel); //重新开始
-    }
-    //重置本关
-    public void ResetBtn()
-    {
-        Debug.Log("重置");
-
-        //清空一切资产
-        PlayerPrefs.SetInt("Account", 100);
-
-        Application.LoadLevel(Application.loadedLevel);
-    }
-    #endregion
-
-    #region 菜单
-    //菜单界面
-    public void OptionsOn()
-    {
-        defaultStyle();                 //恢复菜单的默认状态
-
-        OptionsPanel.SetActive(true);   //将菜单设为可见
-
-        gm.State = GameState.GameSuspension;    //暂停接受输入
-        //gm.over = false;
-    }
-    //关闭菜单
-    public void OptionsOff()
-    {
-        OptionsPanel.SetActive(false);  //关闭菜单面板
-
-        gm.State = GameState.Playing;   //重新接受输入
-        //gm.over = true;
-    }
-
-    //菜单的默认样式
-    private void defaultStyle()
-    {
-        RuleText.SetActive(false);          //关闭规则文字
-        IntroductionText.SetActive(false);  //关闭说明文字
-        ButtonList.SetActive(true);         //恢复菜单面板上按键的显示
-    }
-
-    //说明文字
-    public void RuleOn()
-    {
-        RuleText.SetActive(true);       //显示说明文字
-        ButtonList.SetActive(false);    //隐藏菜单面板上的按键
-    }
-    //介绍文字
-    public void IntroductionOn()
-    {
-        IntroductionText.SetActive(true);
-        ButtonList.SetActive(false);
-    }
-
-    //显示玩法
-    public void TempRule()
-    {
-        defaultStyle();
-        RuleOn();
-        OptionsPanel.SetActive(true);
-    }
-    //单位说明
-    public void TempIntro()
-    {
-        defaultStyle();
-        IntroductionOn();
-        OptionsPanel.SetActive(true);
-    }
-    #endregion
-
-    #region 建造菜单
     //被点击的方块的坐标
     public int x;
     public int y;
 
-    private Vector3 pos;     //菜单坐标
+    private Vector3 MenuPos;    //菜单坐标
+    private Vector3 MsgPos;     //信息窗坐标
     private bool isAdjustment = false;  //是否已经发生过调整
-    //private bool divide = false;    //记录是否已经根据上下屏调整过pos
 
-    private ElementType type;   //被建造的建筑
+    private ElementType type;       //被建造的建筑
     private int MaterialPrice = 0;  //造价.建材
     private int MoneyPrice = 0;     //造价.金钱
 
+    #region 建造菜单
     //建造菜单 并不直接通过按钮调用 而是【按钮调用tile脚本的函数后】再调用本函数发生事件
     public void ConstructionOn(Vector3 position)
     {
         TouchInputManager.Instance.isSwipe = false; //打断触点的移动状态
 
         #region 处理面板溢出屏幕的情况
-        //获取到自身的宽度和窗口的宽度
         float selfWidth = Construction.GetComponent<RectTransform>().sizeDelta.x * transform.localScale.x;  //自身宽度 * 缩放比
-        //float selfHeight = Construction.GetComponent<RectTransform>().sizeDelta.y;
 
         //左侧溢出 0 + 宽/2
         if (position.x - selfWidth / 2 < 0)
@@ -155,15 +58,19 @@ public class EventManager : MonoBehaviour
             position.x = Screen.width - selfWidth / 2;
         }
         #endregion
-
-        pos = position;
-        #region 当触点发生在上半屏时 将面板位于触点下方显示
-        float selfHeight = (Tile.GetComponent<RectTransform>().sizeDelta.y + 2) * transform.localScale.y;   //获取一个格子的高度
-        //如果触点在上半屏(*2是为了不包括中间一行 下6上5
-        if (position.y - selfHeight * 2 > Screen.height / 2)
+        MenuPos = MsgPos = position;    //保存当前坐标 并赋值给信息窗
+        #region 设定菜单出现的位置
+        float selfHeight = (Tile.GetComponent<RectTransform>().sizeDelta.y) * transform.localScale.y;   //获取一个格子的高度
+        //如果触点在上半屏 (下6上5
+        if (position.y - selfHeight > Screen.height / 2)
         {
-            position.y -= selfHeight * 2;   //将面板的坐标向下移动一个单位的距离
+            position.y -= selfHeight;   //将面板的坐标向下移动一个单位的距离
             //divide = true;
+        }
+        //如果在下半屏
+        else
+        {
+            position.y += selfHeight;   //将面板的坐标向上移动一个单位的距离
         }
         #endregion
 
@@ -190,80 +97,15 @@ public class EventManager : MonoBehaviour
         Construction.SetActive(false);  //关闭菜单
     }
 
-    #region 各个建筑按钮
-    public void Tower()
-    {
-        //定义造价
-        int premium = gm.CountOff(ElementType.Tower) * 2;   //系数 造一座塔涨价 [x*2]
-        MaterialPrice = 2 * 8;            //造价.建材 = 2的n倍 + 加价
-        MoneyPrice = 10 * 5 + premium;    //造价.金钱 = 10的n倍 + 加价
-
-        //触发信息面板
-        type = ElementType.Tower;
-        MessageBoxOn(ElementType.Tower);
-    }
-    public void Wall()
-    {
-        MaterialPrice = 2 * 1;
-        MoneyPrice = 10 * 0;
-
-        type = ElementType.Wall;
-        MessageBoxOn(ElementType.Wall);
-    }
-    public void Landmine()
-    {
-        int premium = 10 * gm.count;    //每造一个雷贵10块
-        MaterialPrice = 2 * 0;
-        MoneyPrice = 10 * 1 + premium;
-
-        type = ElementType.Landmine;
-        MessageBoxOn(ElementType.Landmine);
-    }
-    public void Power()
-    {
-        int premium = gm.CountOff(ElementType.Power);
-        if (premium < 3)
-        {
-            premium = 0;    //如果数量小于3个 不加价
-        }
-        else
-        {
-            premium -= 3;   //大于3个后加数量-3的价格
-        }
-        MaterialPrice = 2 * 2 + premium;
-        MoneyPrice = 10 * 1 + premium;
-
-        type = ElementType.Power;
-        MessageBoxOn(ElementType.Power);
-    }
-    public void Mall()
-    {
-        int premium = gm.CountOff(ElementType.Mall);
-        if (premium < 3)
-        {
-            premium = 0;
-        }
-        else
-        {
-            premium -= 2;
-        }
-        MaterialPrice = 2 * 3 + premium;
-        MoneyPrice = 10 * 2 + premium;
-
-        type = ElementType.Mall;
-        MessageBoxOn(ElementType.Mall);
-    }
-    #endregion
-
     //说明面板 非按钮事件 在建造按钮被按下后触发 参数是按钮指向的建筑类型 以及显示坐标
     private void MessageBoxOn(ElementType type)
     {
+        #region 设置信息文字
         //string s1 = ""; //名称
         string s2 = ""; //说明
         string s3 = "\n 建材：" + MaterialPrice + " , お金：" + MoneyPrice; //造价
         string s4 = ""; //可否建造
 
-        //设置信息文字
         switch (type)
         {
             case ElementType.Tower:
@@ -366,6 +208,7 @@ public class EventManager : MonoBehaviour
         }
         //Message.text = s1 + s2 + s3 + s4;
         Message.text = s2 + s3 + s4;
+        #endregion
 
         #region 设定信息面板的位置
         //pos = Construction.transform.position;      //首先先恢复pos的位置
@@ -373,41 +216,53 @@ public class EventManager : MonoBehaviour
         float tileHeight = Tile.GetComponent<RectTransform>().sizeDelta.y * transform.localScale.y;         //格子的高度
         float MenuHeight = Construction.GetComponent<RectTransform>().sizeDelta.y * transform.localScale.y; //菜单的高度
 
-        //仅在第一次修正坐标的位置
+        //仅在第一次触发时修正坐标的位置
         if (!isAdjustment)
         {
-            //如果在上半屏 使其出现在下方 判断坐标 = pos - 菜单高度（菜单高度/2 + 格子高度/2）
-            if (pos.y - MenuHeight * 2 > Screen.height / 2)
+            //如果在上半屏 使其出现在下方 判断坐标 = pos - 单位高度/2 - 菜单高度
+            if (MsgPos.y > Screen.height / 2)
             {
-                pos.y = (pos.y - tileHeight * 2 - MenuHeight / 2) - selfHeight / 2;
+                MsgPos.y = (MsgPos.y - tileHeight / 2 - MenuHeight) - selfHeight / 2;
             }
             //如果在下半屏 使其出现在上方
             else
             {
-                //设定坐标 = pos（菜单坐标） + 方块高度/2 + 信息窗高度/2
-                pos.y = (pos.y + tileHeight / 2) + selfHeight / 2;
+                //设定坐标 = pos（菜单坐标） + 方块高度/2 + 菜单高度 + 信息窗高度/2
+                MsgPos.y = (MsgPos.y + tileHeight / 2 + MenuHeight) + selfHeight / 2;
             }
             isAdjustment = true;
         }
 
         //处理下侧溢 (纵坐标-高度/2 < 0
-        if (pos.y - selfHeight / 2 < 0)
+        if (MsgPos.y - selfHeight / 2 < 0)
         {
-            pos.y = selfHeight / 2;
+            MsgPos.y = selfHeight / 2;
         }
-        //上侧溢出（暂时不管
+        //上侧溢出(纵坐标+高度/2 > 屏幕top
+        else if (MsgPos.y + selfHeight / 2 > Screen.height)
+        {
+            MsgPos.y = Screen.height - selfHeight / 2;
+        }
         #endregion
+
         //将面板设为可见
-        MessageBox.transform.position = pos;    //坐标跟随
+        MessageBox.transform.position = MsgPos;    //坐标跟随
         MessageBox.SetActive(true);             //设为可见
     }
     //在取消建造菜单、或是建造成功后关闭面板
     public void MessageClose()
     {
         //MessageCloseBtn.SetActive(false);     //隐藏关闭按钮
-        MessageBox.SetActive(false);            //关闭面板
-        pos = new Vector3(Screen.width / 2, Screen.height / 2, 0);  //恢复坐标的位置
-        isAdjustment = false;   //恢复为没有调整过坐标的状态
+        MessageBox.SetActive(false);    //关闭面板
+        MsgPos = MenuPos;               //恢复坐标的位置
+        isAdjustment = false;           //恢复为没有调整过坐标的状态
+
+        //如果建造菜单还处于打开状态 则不回复可造作状态
+        if (!Construction.active)
+        {
+            gm.State = GameState.Playing;   //恢复可以接受操作的状态
+        }
+
     }
 
     //确认建造按钮
@@ -422,6 +277,71 @@ public class EventManager : MonoBehaviour
 
         //根据类型调用建造函数
         gm.Generate(type, x, y);
+    }
+    #endregion
+
+    #region 各个建筑按钮
+    public void Tower()
+    {
+        //定义造价
+        int premium = gm.CountOff(ElementType.Tower) * 2;   //系数 造一座塔涨价 [x*2]
+        MaterialPrice = 2 * 8;            //造价.建材 = 2的n倍 + 加价
+        MoneyPrice = 10 * 5 + premium;    //造价.金钱 = 10的n倍 + 加价
+
+        //触发信息面板
+        type = ElementType.Tower;
+        MessageBoxOn(ElementType.Tower);
+    }
+    public void Wall()
+    {
+        MaterialPrice = 2 * 1;
+        MoneyPrice = 10 * 0;
+
+        type = ElementType.Wall;
+        MessageBoxOn(ElementType.Wall);
+    }
+    public void Landmine()
+    {
+        int premium = 10 * gm.count;    //每造一个雷贵10块
+        MaterialPrice = 2 * 0;
+        MoneyPrice = 10 * 1 + premium;
+
+        type = ElementType.Landmine;
+        MessageBoxOn(ElementType.Landmine);
+    }
+    public void Power()
+    {
+        int premium = gm.CountOff(ElementType.Power);
+        if (premium < 3)
+        {
+            premium = 0;    //如果数量小于3个 不加价
+        }
+        else
+        {
+            premium -= 3;   //大于3个后加数量-3的价格
+        }
+        MaterialPrice = 2 * 2 + premium;
+        MoneyPrice = 10 * 1 + premium;
+
+        type = ElementType.Power;
+        MessageBoxOn(ElementType.Power);
+    }
+    public void Mall()
+    {
+        int premium = gm.CountOff(ElementType.Mall);
+        if (premium < 3)
+        {
+            premium = 0;
+        }
+        else
+        {
+            premium -= 2;
+        }
+        MaterialPrice = 2 * 3 + premium;
+        MoneyPrice = 10 * 2 + premium;
+
+        type = ElementType.Mall;
+        MessageBoxOn(ElementType.Mall);
     }
     #endregion
 
@@ -473,13 +393,13 @@ public class EventManager : MonoBehaviour
     //在非空方块被点击时 显示说明文件
     public void other(ElementType type)
     {
-        //如果建造菜单被打开 将其关闭
-        ConstructionOff();
+        ConstructionOff();      //如果建造菜单被打开 将其关闭
+        gm.State = GameState.GameSuspension;    //暂停接受输入
 
         //显示面板
         string s = document(type);  //获得介绍文字
         Message.text = s;           //更新文字
-        MessageBox.transform.position = pos;    //指定面板的位置（屏幕中心）
+        MessageBox.transform.position = new Vector3(Screen.width / 2, Screen.height / 2, 0);    //指定面板的位置（屏幕中心）
         MessageBox.SetActive(true); //显示信息面板
         Confirm.SetActive(false);   //隐藏确认按钮
         //MessageCloseBtn.SetActive(true); //显示关闭按钮
