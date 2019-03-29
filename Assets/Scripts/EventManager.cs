@@ -301,14 +301,16 @@ public class EventManager : MonoBehaviour
         type = ElementType.Wall;
         MessageBoxOn(ElementType.Wall);
     }
+    public int LCcount = 0;     //记录本关内地雷的建造数量
     public void Landmine()
     {
-        int premium = 10 * gm.count;    //每造一个雷贵10块
+        int premium = 10 * LCcount;    //每造一个雷贵10块
         MaterialPrice = 2 * 0;
         MoneyPrice = 10 * 1 + premium;
 
         type = ElementType.Landmine;
         MessageBoxOn(ElementType.Landmine);
+        LCcount++;
     }
     public void Power()
     {

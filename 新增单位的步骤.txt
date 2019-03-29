@@ -1,0 +1,18 @@
+1. 在【GameManager】的 ElementType 枚举中声明新单位的名称（注意区分该单位可否移动）
+
+2. 在Unity的Canvas-> TileStyleHolder 中增长列表长度 定义并添加新单位的贴图
+
+3. 在【Tile】脚本的 ApplyStyle 函数中绑定类型与贴图
+
+4. 在【GameManager】脚本的两个移动方法中 添加该单位的移动和碰撞规则（不发生移动的单位可以不定义
+
+5. 如果这个单位在回合结束时会触发特殊的事件 在【GameManager】的任意位置定义事件函数 并于 UpdateEmptyTiles 方法中设定调用时机
+
+6. 在【EventManager】脚本的document函数中填写该单位的说明文字
+
+	如果是建筑单位
+7.1. 在【EventManager】脚本的MessageBoxOn方法中添加该单位的建造按钮
+7.2. 在【EventManager】脚本中添加一个函数 用于定义该单位的造价
+7.3. 在Unity的Canvas-> GamePanel -> Contruction 中添加该单位的建造按钮 并绑定建造函数
+7.9. 当想要删除一个建筑单位时 只需删除他的建造按钮 使其无法被被调用即可
+
