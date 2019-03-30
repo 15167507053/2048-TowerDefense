@@ -13,7 +13,8 @@ public class EventManager : MonoBehaviour
     public GameObject Tile;             //用于测距
     public GameObject Construction;     //建造菜单
     public GameObject MessageBox;       //建筑说明面板
-    public GameObject Confirm;          //建造确认
+    public GameObject Confirm;          //建造确认按钮
+    public GameObject TearDown;         //解体按钮
     public Text Message;                //说明文字
     //public GameObject MessageCloseBtn;     //关闭说明面板
 
@@ -75,6 +76,8 @@ public class EventManager : MonoBehaviour
         }
         #endregion
 
+        //如果信息面板被打开 先将其关闭
+        MessageClose();
         //设为可见
         Construction.transform.position = position;     //指定坐标跟随
         Construction.SetActive(true);       //显示面板
@@ -258,6 +261,10 @@ public class EventManager : MonoBehaviour
         MsgPos = MenuPos;               //恢复坐标的位置
         isAdjustment = false;           //恢复为没有调整过坐标的状态
 
+        //禁用建造和拆除按钮
+        Confirm.SetActive(false);
+        TearDown.SetActive(false);
+
         //如果建造菜单还处于打开状态 则不回复可造作状态
         if (!Construction.active)
         {
@@ -269,7 +276,6 @@ public class EventManager : MonoBehaviour
     //确认建造按钮
     public void ConfirmBtn()
     {
-        MessageClose();    //关闭说明面板
         ConstructionOff();              //关闭建造菜单
 
         //消耗资源
@@ -278,6 +284,17 @@ public class EventManager : MonoBehaviour
 
         //根据类型调用建造函数
         gm.Generate(type, x, y);
+    }
+
+    //拆除建筑
+    public void TearDownBtn()
+    {
+        //关闭面板
+        MessageClose();
+        //进行拆除花费
+        Money.Instance.Numerical -= 10;
+        //清空该建筑
+        gm.AllTiles[y, x].TileType = ElementType.Empty;
     }
     #endregion
 
@@ -404,7 +421,13 @@ public class EventManager : MonoBehaviour
         Message.text = s;           //更新文字
         MessageBox.transform.position = new Vector3(Screen.width / 2, Screen.height / 2, 0);    //指定面板的位置（屏幕中心）
         MessageBox.SetActive(true); //显示信息面板
-        Confirm.SetActive(false);   //隐藏确认按钮
+        Confirm.SetActive(false);   //隐藏确认建造按钮
+
+        //如果是个建筑单位 且资金足够 显示拆除按钮
+        if ((int)type >= (int)ElementType.Tower && Money.Instance.Numerical - 10 > 0)
+        {
+            TearDown.SetActive(true);
+        }
         //MessageCloseBtn.SetActive(true); //显示关闭按钮
     }
     #endregion

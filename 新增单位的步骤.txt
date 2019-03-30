@@ -12,7 +12,7 @@
 
 	如果是建筑单位
 7.1. 在【EventManager】脚本的MessageBoxOn方法中添加该单位的建造按钮
-7.2. 在【EventManager】脚本中添加一个函数 用于定义该单位的造价
+7.2. 在【EventManager】脚本中添加一个函数 用于定义该单位的造价 并在unity中绑定至按钮事件
 7.3. 在Unity的Canvas-> GamePanel -> Contruction 中添加该单位的建造按钮 并绑定建造函数
 7.9. 当想要删除一个建筑单位时 只需删除他的建造按钮 使其无法被被调用即可
 

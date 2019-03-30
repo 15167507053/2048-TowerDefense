@@ -87,8 +87,8 @@
     <Compile Include="Assets\Scripts\NumericalManager\Money.cs" />
     <Compile Include="Assets\Scripts\NumericalManager\Power.cs" />
     <Compile Include="Assets\Scripts\PanelManager.cs" />
-    <Compile Include="Assets\Scripts\Tile.cs" />
-    <Compile Include="Assets\Scripts\TileStyleHolder.cs" />
+    <Compile Include="Assets\Scripts\Tile\Tile.cs" />
+    <Compile Include="Assets\Scripts\Tile\TileStyleHolder.cs" />
     <Compile Include="Assets\Scripts\autogridlayoutfiles\AutoGridLayout.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

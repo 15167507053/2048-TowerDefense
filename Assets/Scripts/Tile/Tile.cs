@@ -131,6 +131,9 @@ public class Tile : MonoBehaviour
             case ElementType.AssistedEnemy: //支援型敌人
                 ApplyStyleFromHolder(13);
                 break;
+            case ElementType.Access:
+                ApplyStyleFromHolder(14);
+                break;
             
             default:
                 Debug.LogError("Check the numbers that you pass to ApplyStyle!");

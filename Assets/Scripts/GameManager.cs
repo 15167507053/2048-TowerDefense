@@ -32,6 +32,7 @@ public enum ElementType
     Trap,       //陷阱【】
     Refuge,     //避难所【】
     Magnetic,   //干扰磁场【】
+    Access,     //主角进入避难所
 
     AssistedEnemy,  //支援型敌人【】
 }
@@ -43,7 +44,7 @@ public class GameManager : MonoBehaviour
 
     //public bool over = false;   //游戏是否结束
     public bool won = false;   //游戏是否已经胜利
-    
+
     private bool move = false; //玩家是否发生过移动
     private int turn = 0;      //记录回合数
 
@@ -257,6 +258,10 @@ public class GameManager : MonoBehaviour
                 {
                     Generate(ElementType.Enemy);    //每五回合产生一个敌人
                 }
+                if (turn % 10 == 0)
+                {
+                    Generate(ElementType.Wall);     //每十回合产生一个墙
+                }
 
                 /// 9.游戏胜负的判定
                 //【30回合后】场上【不存在敌人】 则游戏胜利 但仅限于第一次获得胜利的情况
@@ -400,8 +405,8 @@ public class GameManager : MonoBehaviour
                     #region 建筑
                     //地雷
                     case ElementType.Landmine:
-                        //仅与敌人发生事件 【不管敌人处于何种状态】
-                        if (LineOfTiles[i + 1].TileType == ElementType.Enemy)
+                        //仅与敌人发生事件 【不管敌人处于何种状态】 此外还可以炸墙
+                        if (LineOfTiles[i + 1].TileType == ElementType.Enemy || LineOfTiles[i + 1].TileType == ElementType.Wall)
                         {
                             //被8级以下敌人碰撞 毁灭敌人和自身
                             if (LineOfTiles[i + 1].TileLevel <= 8)
@@ -427,21 +432,22 @@ public class GameManager : MonoBehaviour
                     //墙壁
                     case ElementType.Wall:
                         //不发生任何事件
-                        break;
+                        //break;
 
-                        //可以被主角推动 但每回合【只移动一格】&【主角未发生过合并】&【当前不处于边缘】
+                        //可以被主角推动 但每回合【当前不处于边缘】 & 【只移动一格】&【主角未发生过合并】&【下一格为空】
                         if (LineOfTiles[i + 1].TileType == ElementType.Player && i - 1 >= 0 &&
-                            /*LineOfTiles[i].moveThisTurn == false &&*/ LineOfTiles[i + 1].mergedThisTurn == false && LineOfTiles[i - 1].TileType == ElementType.Empty)
+                            LineOfTiles[i].moveThisTurn == false && LineOfTiles[i + 1].mergedThisTurn == false && LineOfTiles[i - 1].TileType == ElementType.Empty)
                         {
                             Debug.Log("推");
                             //将自身传递到前方一格
-
+                            LineOfTiles[i - 1].TileType = ElementType.Wall;
                             //将主角移动到身后
-
+                            LineOfTiles[i].TileType = ElementType.Player;
                             //清空主角身后的位置
+                            LineOfTiles[i + 1].TileType = ElementType.Empty;
 
                             //关闭自身的移动开关
-                            LineOfTiles[i + 1].moveThisTurn = true;
+                            LineOfTiles[i - 1].moveThisTurn = true;
                         }
                         break;
 
@@ -592,7 +598,7 @@ public class GameManager : MonoBehaviour
                     #region 建筑
                     //地雷
                     case ElementType.Landmine:
-                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy)
+                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy || LineOfTiles[i - 1].TileType == ElementType.Wall)
                         {
                             if (LineOfTiles[i + 1].TileLevel <= 8)
                             {
@@ -615,21 +621,18 @@ public class GameManager : MonoBehaviour
                     //墙壁
                     case ElementType.Wall:
                         //不发生任何事件
-                        break;
+                        //break;
 
                         //可以被主角推动 但每回合【当前不处于边缘】&【只移动一格】&【主角未发生过合并】&【后方为空】
-                        if (LineOfTiles[i - 1].TileType == ElementType.Player && i + 1 <= (LineOfTiles.Length - 1) &&
-                            /*LineOfTiles[i].moveThisTurn == false &&*/ LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[1 + 1].TileType == ElementType.Empty)
+                        if (LineOfTiles[i - 1].TileType == ElementType.Player && i + 1 >= 0 &&
+                            LineOfTiles[i].moveThisTurn == false && LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[i + 1].TileType == ElementType.Empty)
                         {
                             Debug.Log("推");
-                            //将自身传递到前方一格
+                            LineOfTiles[i + 1].TileType = ElementType.Wall;
+                            LineOfTiles[i].TileType = ElementType.Player;
+                            LineOfTiles[i - 1].TileType = ElementType.Empty;
 
-                            //将主角移动到身后
-
-                            //清空主角身后的位置
-
-                            //关闭自身的移动开关
-                            LineOfTiles[i - 1].moveThisTurn = true;
+                            LineOfTiles[i + 1].moveThisTurn = true;
                         }
                         break;
 
