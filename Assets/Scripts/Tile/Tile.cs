@@ -47,6 +47,7 @@ public class Tile : MonoBehaviour
         TileImage = transform.Find("TileBreedCell").GetComponent<Image>();
         TileText = GetComponentInChildren<Text>();
     }
+
     #region 修改样式
     //更新方块的显示样式
     public void UpdateTile()
@@ -113,6 +114,28 @@ public class Tile : MonoBehaviour
                 TileLevel = 0;
                 ApplyStyleFromHolder(7);
                 break;
+            case ElementType.Trap:          //陷阱
+                ApplyStyleFromHolder(8);
+                break;
+            case ElementType.Refuge:        //避难所
+                ApplyStyleFromHolder(9);
+                break;
+            case ElementType.Magnetic:      //干扰磁场
+                ApplyStyleFromHolder(10);
+                break;
+            case ElementType.TowerEnemy:    //远程型敌人
+                ApplyStyleFromHolder(11);
+                break;
+            case ElementType.BuilderEnemy:  //造墙型敌人
+                ApplyStyleFromHolder(12);
+                break;
+            case ElementType.AssistedEnemy: //支援型敌人
+                ApplyStyleFromHolder(13);
+                break;
+            case ElementType.Access:
+                ApplyStyleFromHolder(14);
+                break;
+
             default:
                 Debug.LogError("Check the numbers that you pass to ApplyStyle!");
                 break;
@@ -174,7 +197,15 @@ public class Tile : MonoBehaviour
     //自身的按钮事件
     public void Tilebtn()
     {
-        //若自身不为空 则无视输入
+        //如果建造菜单处于开启状态/游戏处于不可进行状态 不进行传值
+        if (gm.State == GameState.Playing)
+        {
+            //获取到自身坐标并传值
+            EventManager.Instance.x = indCol;
+            EventManager.Instance.y = indRow;
+        }
+
+        //若自身为空 则开启建造菜单
         if (TileType == ElementType.Empty)
         {
             if (EventManager.Instance.Construction.activeSelf)
@@ -189,9 +220,6 @@ public class Tile : MonoBehaviour
                 //更改样式为选中（通过禁用自身
                 this.GetComponent<Button>().interactable = false;
 
-                //获取到自身坐标并传值
-                EventManager.Instance.x = indCol;
-                EventManager.Instance.y = indRow;
                 EventManager.Instance.ConstructionOn(transform.position);    //显示建造面板
             }
         }
