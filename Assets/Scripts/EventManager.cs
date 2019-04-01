@@ -16,7 +16,6 @@ public class EventManager : MonoBehaviour
     public GameObject Confirm;          //建造确认按钮
     public GameObject TearDown;         //解体按钮
     public Text Message;                //说明文字
-    //public GameObject MessageCloseBtn;     //关闭说明面板
 
     void Awake()
     {
@@ -76,16 +75,18 @@ public class EventManager : MonoBehaviour
         }
         #endregion
 
-        //如果信息面板被打开 先将其关闭
-        MessageClose();
         //设为可见
         Construction.transform.position = position;     //指定坐标跟随
         Construction.SetActive(true);       //显示面板
+
+        //如果信息面板被打开 将其关闭
+        MessageClose();
     }
     public void ConstructionOff()
     {
         //恢复按钮的样式（通过启用按钮
-        gm.AllTiles[y, x].GetComponent<Button>().interactable = true;
+        //gm.AllTiles[y, x].GetComponent<Button>().interactable = true;     //采用单个按钮复原时偶尔会出现复原不了的bug
+        gm.CountOff(type);  //使用【类型单位计数】的附带功能 关闭所有的按钮禁用状态
 
         //短时间内不接受移动输入操作
         //float timer = Time.time;    //关闭菜单的时间
@@ -209,6 +210,62 @@ public class EventManager : MonoBehaviour
                 }
                 #endregion
                 break;
+
+            case ElementType.Trap:
+                #region 陷阱
+                s2 = document(ElementType.Trap);
+
+                if (Money.Instance.Numerical - MoneyPrice < 0)
+                {
+                    s4 = "<color=#ff0000>\n お金不足</color>";
+                    Confirm.SetActive(false);
+                }
+                else
+                {
+                    s4 = "<color=#00ff00>\n 建造可能</color>";
+                    Confirm.SetActive(true);
+                }
+                #endregion
+                break;
+
+            case ElementType.Refuge:
+                #region 避难所
+                s2 = document(ElementType.Refuge);
+
+                if (Material.Instance.Numerical - MaterialPrice < 0)
+                {
+                    s4 = "<color=#ff0000>\n 建材不足</color>";
+                    Confirm.SetActive(false);
+                }
+                else if (gm.CountOff(ElementType.Refuge) != 0)
+                {
+                    s4 = "<color=#ff0000>\n 避难所は一個しか建てない</color>";
+                    Confirm.SetActive(false);
+                }
+                else
+                {
+                    s4 = "<color=#00ff00>\n 建造可能</color>";
+                    Confirm.SetActive(true);
+                }
+                #endregion
+                break;
+
+            case ElementType.Magnetic:
+                #region 干扰磁场
+                s2 = document(ElementType.Magnetic);
+
+                if (Material.Instance.Numerical - MaterialPrice < 0)
+                {
+                    s4 = "<color=#ff0000>\n 建材不足</color>";
+                    Confirm.SetActive(false);
+                }
+                else
+                {
+                    s4 = "<color=#00ff00>\n 建造可能</color>";
+                    Confirm.SetActive(true);
+                }
+                #endregion
+                break;
         }
         //Message.text = s1 + s2 + s3 + s4;
         Message.text = s2 + s3 + s4;
@@ -253,10 +310,8 @@ public class EventManager : MonoBehaviour
         MessageBox.transform.position = MsgPos;    //坐标跟随
         MessageBox.SetActive(true);             //设为可见
     }
-    //在取消建造菜单、或是建造成功后关闭面板
     public void MessageClose()
     {
-        //MessageCloseBtn.SetActive(false);     //隐藏关闭按钮
         MessageBox.SetActive(false);    //关闭面板
         MsgPos = MenuPos;               //恢复坐标的位置
         isAdjustment = false;           //恢复为没有调整过坐标的状态
@@ -270,7 +325,6 @@ public class EventManager : MonoBehaviour
         {
             gm.State = GameState.Playing;   //恢复可以接受操作的状态
         }
-
     }
 
     //确认建造按钮
@@ -290,7 +344,7 @@ public class EventManager : MonoBehaviour
     public void TearDownBtn()
     {
         //关闭面板
-        MessageClose();
+        ConstructionOff();
         //进行拆除花费
         Money.Instance.Numerical -= 10;
         //清空该建筑
@@ -299,6 +353,7 @@ public class EventManager : MonoBehaviour
     #endregion
 
     #region 各个建筑按钮
+    //塔
     public void Tower()
     {
         //定义造价
@@ -310,6 +365,7 @@ public class EventManager : MonoBehaviour
         type = ElementType.Tower;
         MessageBoxOn(ElementType.Tower);
     }
+    //墙
     public void Wall()
     {
         MaterialPrice = 2 * 1;
@@ -318,17 +374,19 @@ public class EventManager : MonoBehaviour
         type = ElementType.Wall;
         MessageBoxOn(ElementType.Wall);
     }
-    public int LCcount = 0;     //记录本关内地雷的建造数量
+    //地雷
+    public int LCount = 0;     //记录本关内地雷的建造数量
     public void Landmine()
     {
-        int premium = 10 * LCcount;    //每造一个雷贵10块
+        int premium = 10 * LCount;    //每造一个雷贵10块
         MaterialPrice = 2 * 0;
         MoneyPrice = 10 * 1 + premium;
 
         type = ElementType.Landmine;
         MessageBoxOn(ElementType.Landmine);
-        LCcount++;
+        LCount++;
     }
+    //发电站
     public void Power()
     {
         int premium = gm.CountOff(ElementType.Power);
@@ -346,6 +404,7 @@ public class EventManager : MonoBehaviour
         type = ElementType.Power;
         MessageBoxOn(ElementType.Power);
     }
+    //商场
     public void Mall()
     {
         int premium = gm.CountOff(ElementType.Mall);
@@ -363,6 +422,37 @@ public class EventManager : MonoBehaviour
         type = ElementType.Mall;
         MessageBoxOn(ElementType.Mall);
     }
+    //陷阱
+    public void Trap()
+    {
+        int premium = 0;
+        MaterialPrice = 2 * 0;
+        MoneyPrice = 10 * 1 + premium;
+
+        type = ElementType.Trap;
+        MessageBoxOn(ElementType.Trap);
+    }
+    //避难所
+    public void Refuge()
+    {
+        int premium = 0;
+        MaterialPrice = 2 * 3;
+        MoneyPrice = 10 * 2 + premium;
+
+        type = ElementType.Refuge;
+        MessageBoxOn(ElementType.Refuge);
+    }
+    //干扰磁场
+    public void Magnetic()
+    {
+        int premium = 1;
+        MaterialPrice = 2 * 1;
+        MoneyPrice = 10 * 3 + premium;
+
+        type = ElementType.Magnetic;
+        MessageBoxOn(ElementType.Magnetic);
+    }
+
     #endregion
 
     #region 说明文档
@@ -403,6 +493,34 @@ public class EventManager : MonoBehaviour
                 s = "<b> 攻撃タワー </b>\n 毎ターンは自身の左右上下直線３単位内の「敵」を一体攻撃します。攻撃の際、敵レベル×2の電力を消耗します、しかも、もし消耗していたら、残りの電力が20以下になってしまう場合は、攻撃しません";
                 break;
 
+            case ElementType.Trap:
+                s = "<b> 落とし穴 </b>\n 主人公・建材・敵が入ったら、移動を止まれる、次のターンは一歩しか動かない";
+                break;
+
+            case ElementType.Refuge:
+                s = "<b> 避難所 </b>\n 主人公が入ったら、敵の攻撃を防げる、空いてるの状態の時は敵に壊させる。ボート上では一個しか存在できない";
+                break;
+
+            case ElementType.Magnetic:
+                s = "<b> 妨害磁場 </b>\n 周りの主人公・建材・敵が全部後退３歩、建造後ただちに効果が発生、そしてそのターンで消える";
+                break;
+
+            case ElementType.Access:
+                s = "主人公は避難所に入っている状態、普通の敵には攻撃されない（遠隔敵は攻撃できる）、次のターンで有効な移動方向に一歩移動する";
+                break;
+
+            case ElementType.TowerEnemy:
+                s = "<b> 遠隔型敵 </b>\n 攻撃タワーと同じ、自身を中心に３単位の建物や主人公を攻撃できる、しかも移動もできる。ただレベルはない、合併や突き当りの攻撃手段もない";
+                break;
+
+            case ElementType.BuilderEnemy:
+                s = "<b> 工事型敵 </b>\n 普通の敵とのほぼ同じ、ただ自身が歩いた道に壁を作って残る";
+                break;
+
+            case ElementType.AssistedEnemy:
+                s = "<b> 支援型敵 </b>\n 移動はしない、ボート上に存在すると、毎ターン全ての敵のレベルを2倍にする";
+                break;
+
             default:
                 s = "まだ準備出来ていない";
                 break;
@@ -424,13 +542,13 @@ public class EventManager : MonoBehaviour
         Confirm.SetActive(false);   //隐藏确认建造按钮
 
         //如果是个建筑单位 且资金足够 显示拆除按钮
-        if ((int)type >= (int)ElementType.Tower && Money.Instance.Numerical - 10 > 0)
+        if (type >= ElementType.Tower && type < ElementType.Access && Money.Instance.Numerical - 10 > 0)
         {
             TearDown.SetActive(true);
         }
-        //MessageCloseBtn.SetActive(true); //显示关闭按钮
     }
     #endregion
+
 
     #region 建造（源码备份
     //建造事件
