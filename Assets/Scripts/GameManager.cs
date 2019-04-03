@@ -319,11 +319,21 @@ public class GameManager : MonoBehaviour
             if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType != ElementType.Empty &&
                 LineOfTiles[i + 1].TileType < ElementType.Tower && LineOfTiles[i + 1].mergedThisTurn == false)
             {
-                //移动
+                //通用的移动代码
                 LineOfTiles[i].TileLevel = LineOfTiles[i + 1].TileLevel;    //将后方方块的等级转移到自己身上
                 LineOfTiles[i].TileType = LineOfTiles[i + 1].TileType;      //将其的类型也进行转移
-                LineOfTiles[i + 1].TileType = ElementType.Empty;            //清空后方方块的数值
                 LineOfTiles[i + 1].TileLevel = 0;                           //清除遗留的数字
+
+                //造墙兵留下墙
+                if (LineOfTiles[i + 1].TileType == ElementType.BuilderEnemy)
+                {
+                    LineOfTiles[i + 1].TileType = ElementType.Wall;
+                }
+                //普通单位清空足迹
+                else
+                {
+                    LineOfTiles[i + 1].TileType = ElementType.Empty;            //清空后方方块的数值
+                }
 
                 //主角或敌人移动时进行消耗
                 if (LineOfTiles[i].TileType == ElementType.Player || LineOfTiles[i].TileType == ElementType.Enemy)
@@ -332,6 +342,19 @@ public class GameManager : MonoBehaviour
                 }
                 LineOfTiles[i].moveThisTurn = true;  //本格（该单位）发生过移动
                 return true;    //用于控制循环，直至没有可合并的方块
+            }
+
+            //若上一格方块为满员避难所 放出主角
+            else if (LineOfTiles[i + 1].TileType == ElementType.Access && EnterRefuge == false)
+            {
+                //如果本格为空 将主角放置于此位置
+                if (LineOfTiles[i].TileType == ElementType.Empty)
+                {
+                    //放出主角
+                    LineOfTiles[i].TileType = ElementType.Player;
+                    //将自身改回普通避难所
+                    LineOfTiles[i + 1].TileType = ElementType.Refuge;
+                }
             }
             #endregion
 
@@ -430,6 +453,8 @@ public class GameManager : MonoBehaviour
                     case ElementType.AssistedEnemy:
                         //辅助兵 不移动 仅在回合结束时发生事件
                         break;
+                    //可以被主角破坏？
+
                     #endregion
 
                     #region 地雷
@@ -563,17 +588,17 @@ public class GameManager : MonoBehaviour
                     //避难状态
                     case ElementType.Access:
                         //不在进入避难所的回合放出主角
-                        if (EnterRefuge == false)
-                        {
-                            //如果下一格为空 将主角放置于该位置
-                            if (i - 1 >= 0 && LineOfTiles[i - 1].TileType == ElementType.Empty)
-                            {
-                                //放出主角
-                                LineOfTiles[i - 1].TileType = ElementType.Player;
-                                //将自身改回普通避难所
-                                LineOfTiles[i].TileType = ElementType.Refuge;
-                            }
-                        }
+                        //if (EnterRefuge == false)
+                        //{
+                        //    //如果下一格为空 将主角放置于该位置
+                        //    if (i - 1 >= 0 && LineOfTiles[i - 1].TileType == ElementType.Empty)
+                        //    {
+                        //        //放出主角
+                        //        LineOfTiles[i - 1].TileType = ElementType.Player;
+                        //        //将自身改回普通避难所
+                        //        LineOfTiles[i].TileType = ElementType.Refuge;
+                        //    }
+                        //}
 
                         //此外不接受任何碰撞（同墙
                         break;
@@ -633,15 +658,35 @@ public class GameManager : MonoBehaviour
             {
                 LineOfTiles[i].TileLevel = LineOfTiles[i - 1].TileLevel;
                 LineOfTiles[i].TileType = LineOfTiles[i - 1].TileType;
-                LineOfTiles[i - 1].TileType = ElementType.Empty;
                 LineOfTiles[i - 1].TileLevel = 0;
 
+                //造墙兵
+                if (LineOfTiles[i - 1].TileType == ElementType.BuilderEnemy)
+                {
+                    LineOfTiles[i - 1].TileType = ElementType.Wall;
+                }
+                else
+                {
+                    LineOfTiles[i - 1].TileType = ElementType.Empty;
+                }
+
+                //移动消耗
                 if (LineOfTiles[i].TileType == ElementType.Player || LineOfTiles[i].TileType == ElementType.Enemy)
                 {
                     Power.Instance.Numerical -= 1;
                 }
                 LineOfTiles[i].moveThisTurn = true;
                 return true;
+            }
+
+            //避难所
+            else if (LineOfTiles[i - 1].TileType == ElementType.Access && EnterRefuge == false)
+            {
+                if (LineOfTiles[i].TileType == ElementType.Empty)
+                {
+                    LineOfTiles[i].TileType = ElementType.Player;
+                    LineOfTiles[i - 1].TileType = ElementType.Refuge;
+                }
             }
             #endregion
 
@@ -842,14 +887,14 @@ public class GameManager : MonoBehaviour
                         break;
 
                     case ElementType.Access:
-                        if (EnterRefuge == false)
-                        {
-                            if (i + 1 < LineOfTiles.Length && LineOfTiles[i + 1].TileType == ElementType.Empty)
-                            {
-                                LineOfTiles[i + 1].TileType = ElementType.Player;
-                                LineOfTiles[i].TileType = ElementType.Refuge;
-                            }
-                        }
+                        //if (EnterRefuge == false)
+                        //{
+                        //    if (i + 1 < LineOfTiles.Length && LineOfTiles[i + 1].TileType == ElementType.Empty)
+                        //    {
+                        //        LineOfTiles[i + 1].TileType = ElementType.Player;
+                        //        LineOfTiles[i].TileType = ElementType.Refuge;
+                        //    }
+                        //}
                         break;
                     #endregion
 
@@ -1190,7 +1235,7 @@ public class GameManager : MonoBehaviour
         //制造一个敌人
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            Generate(ElementType.AssistedEnemy);
+            Generate(ElementType.BuilderEnemy);
 
         }
         //获得大量资源
