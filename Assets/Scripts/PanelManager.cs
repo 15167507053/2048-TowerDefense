@@ -123,7 +123,7 @@ public class PanelManager : MonoBehaviour
 
     #region 游戏结束后的行为
     //失败提示界面
-    public void GameOver(string s)
+    public void GameOver(string s1, string s2)
     {
         //over = false;
         gm.State = GameState.GameSuspension;
@@ -143,7 +143,7 @@ public class PanelManager : MonoBehaviour
 
         PlayerPrefs.SetInt("Account", Money.Instance.Numerical);    //记录游戏失败时的资源
 
-        MessageText.text = s;
+        MessageText.text = s1 + s2;
     }
     //游戏胜利界面
     public void YouWon()
@@ -173,4 +173,5 @@ public class PanelManager : MonoBehaviour
         GameOverPanel.SetActive(false);
     }
     #endregion
+
 }
