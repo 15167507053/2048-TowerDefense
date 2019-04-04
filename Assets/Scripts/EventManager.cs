@@ -555,7 +555,7 @@ public class EventManager : MonoBehaviour
                 break;
 
             case ElementType.AssistedEnemy:
-                s = "<b> 支援型敵 </b>\n 移動はしない、ボート上に存在すると、毎ターン全ての敵のレベルを2倍にする";
+                s = "<b> 支援型敵 </b>\n 移動はしない、ボート上に存在すると、毎ターン全ての敵のレベルを2倍にする。主人公に当たったら破壊される。";
                 break;
 
             default:
