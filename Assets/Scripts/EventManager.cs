@@ -34,11 +34,12 @@ public class EventManager : MonoBehaviour
     private Vector3 MsgPos;     //信息窗坐标
     private bool isAdjustment = false;  //是否已经发生过调整
 
-    private ElementType type;       //被建造的建筑
+    private ElementType NowType;       //被建造的建筑
     private int MaterialPrice = 0;  //造价.建材
     private int MoneyPrice = 0;     //造价.金钱
 
-    #region 建造菜单
+    #region 建造相关菜单
+
     //建造菜单 并不直接通过按钮调用 而是【按钮调用tile脚本的函数后】再调用本函数发生事件
     public void ConstructionOn(Vector3 position)
     {
@@ -86,7 +87,7 @@ public class EventManager : MonoBehaviour
     {
         //恢复按钮的样式（通过启用按钮
         //gm.AllTiles[y, x].GetComponent<Button>().interactable = true;     //采用单个按钮复原时偶尔会出现复原不了的bug
-        gm.CountOff(type);  //使用【类型单位计数】的附带功能 关闭所有的按钮禁用状态
+        gm.CountOff(NowType);  //使用【类型单位计数】的附带功能 关闭所有的按钮禁用状态
 
         //短时间内不接受移动输入操作
         //float timer = Time.time;    //关闭菜单的时间
@@ -108,7 +109,7 @@ public class EventManager : MonoBehaviour
         #region 设置信息文字
         //string s1 = ""; //名称
         string s2 = ""; //说明
-        string s3 = "\n 建材：" + MaterialPrice + " , お金：" + MoneyPrice; //造价
+        string s3 = "\n\n 建材：" + MaterialPrice + " , お金：" + MoneyPrice; //造价
         string s4 = ""; //可否建造
 
         switch (type)
@@ -337,7 +338,7 @@ public class EventManager : MonoBehaviour
         Money.Instance.Numerical -= MoneyPrice;         //减去相应的金钱（可负债
 
         //根据类型调用建造函数
-        gm.Generate(type, x, y);
+        gm.Generate(NowType, x, y);
     }
 
     //拆除建筑
@@ -349,108 +350,144 @@ public class EventManager : MonoBehaviour
         Money.Instance.Numerical -= 10;
         //清空该建筑
         gm.AllTiles[y, x].TileType = ElementType.Empty;
+
+        //获得相当于造价一半的建材 建筑类型在显示说明文档时已获取
+        Material.Instance.Numerical += Price(NowType);
     }
     #endregion
 
+    //定义造价
+    private int Price(ElementType type)
+    {
+        int premium = 0;   //系数
+
+        switch (type)
+        {
+            case ElementType.Tower:
+                premium = gm.CountOff(ElementType.Tower) * 2;   //造一座塔涨价 [x*2]
+                MaterialPrice = 2 * 8;            //造价.建材 = 2的n倍 + 加价
+                MoneyPrice = 10 * 5 + premium;    //造价.金钱 = 10的n倍 + 加价
+                break;
+
+            case ElementType.Wall:
+                MaterialPrice = 2 * 1;
+                MoneyPrice = 10 * 0;
+                break;
+
+            case ElementType.Landmine:
+                premium = 10 * LCount;    //每造一个雷贵10块
+                MaterialPrice = 2 * 0;
+                MoneyPrice = 10 * 1 + premium;
+                break;
+
+            case ElementType.Power:
+                premium = gm.CountOff(ElementType.Power);
+                if (premium < 3)
+                {
+                    premium = 0;    //如果数量小于3个 不加价
+                }
+                else
+                {
+                    premium -= 3;   //大于3个后加数量-3的价格
+                }
+                MaterialPrice = 2 * 2 + premium;
+                MoneyPrice = 10 * 1 + premium;
+                break;
+
+            case ElementType.Mall:
+                premium = gm.CountOff(ElementType.Mall);
+                if (premium < 3)
+                {
+                    premium = 0;
+                }
+                else
+                {
+                    premium -= 2;
+                }
+                MaterialPrice = 2 * 3 + premium;
+                MoneyPrice = 10 * 2 + premium;
+                break;
+
+            case ElementType.Trap:
+                premium = 0;
+                MaterialPrice = 2 * 0;
+                MoneyPrice = 10 * 1 + premium;
+                break;
+
+            case ElementType.Refuge:
+                MaterialPrice = 2 * 3;
+                MoneyPrice = 10 * 2;
+                break;
+
+            case ElementType.Magnetic:
+                premium = 1;
+                MaterialPrice = 2 * 1;
+                MoneyPrice = 10 * 3 + premium;
+                break;
+
+        }
+
+        //返回指定类型所需建材的一半 用于在拆除该建筑时返还
+        return MaterialPrice / 2;
+    }
     #region 各个建筑按钮
     //塔
     public void Tower()
     {
-        //定义造价
-        int premium = gm.CountOff(ElementType.Tower) * 2;   //系数 造一座塔涨价 [x*2]
-        MaterialPrice = 2 * 8;            //造价.建材 = 2的n倍 + 加价
-        MoneyPrice = 10 * 5 + premium;    //造价.金钱 = 10的n倍 + 加价
-
-        //触发信息面板
-        type = ElementType.Tower;
-        MessageBoxOn(ElementType.Tower);
+        NowType = ElementType.Tower;    //更新当下选择的建筑类型
+        Price(NowType);                 //获取到价格
+        MessageBoxOn(NowType);          //显示信息面板
     }
     //墙
     public void Wall()
     {
-        MaterialPrice = 2 * 1;
-        MoneyPrice = 10 * 0;
-
-        type = ElementType.Wall;
-        MessageBoxOn(ElementType.Wall);
+        NowType = ElementType.Wall;
+        Price(NowType);
+        MessageBoxOn(NowType);
     }
     //地雷
     public int LCount = 0;     //记录本关内地雷的建造数量
     public void Landmine()
     {
-        int premium = 10 * LCount;    //每造一个雷贵10块
-        MaterialPrice = 2 * 0;
-        MoneyPrice = 10 * 1 + premium;
-
-        type = ElementType.Landmine;
-        MessageBoxOn(ElementType.Landmine);
+        NowType = ElementType.Landmine;
+        Price(NowType);
+        MessageBoxOn(NowType);
         LCount++;
     }
     //发电站
     public void Power()
     {
-        int premium = gm.CountOff(ElementType.Power);
-        if (premium < 3)
-        {
-            premium = 0;    //如果数量小于3个 不加价
-        }
-        else
-        {
-            premium -= 3;   //大于3个后加数量-3的价格
-        }
-        MaterialPrice = 2 * 2 + premium;
-        MoneyPrice = 10 * 1 + premium;
-
-        type = ElementType.Power;
-        MessageBoxOn(ElementType.Power);
+        NowType = ElementType.Power;
+        Price(NowType);
+        MessageBoxOn(NowType);
     }
     //商场
     public void Mall()
     {
-        int premium = gm.CountOff(ElementType.Mall);
-        if (premium < 3)
-        {
-            premium = 0;
-        }
-        else
-        {
-            premium -= 2;
-        }
-        MaterialPrice = 2 * 3 + premium;
-        MoneyPrice = 10 * 2 + premium;
-
-        type = ElementType.Mall;
-        MessageBoxOn(ElementType.Mall);
+        NowType = ElementType.Mall;
+        Price(NowType);
+        MessageBoxOn(NowType);
     }
     //陷阱
     public void Trap()
     {
-        int premium = 0;
-        MaterialPrice = 2 * 0;
-        MoneyPrice = 10 * 1 + premium;
-
-        type = ElementType.Trap;
-        MessageBoxOn(ElementType.Trap);
+        NowType = ElementType.Trap;
+        Price(NowType);
+        MessageBoxOn(NowType);
     }
     //避难所
     public void Refuge()
     {
-        int premium = 0;
-        MaterialPrice = 2 * 3;
-        MoneyPrice = 10 * 2 + premium;
-
-        type = ElementType.Refuge;
-        MessageBoxOn(ElementType.Refuge);
+        NowType = ElementType.Refuge;
+        Price(NowType);
+        MessageBoxOn(NowType);
     }
     //干扰磁场
     public void Magnetic()
     {
-        int premium = 1;
-        MaterialPrice = 2 * 1;
-        MoneyPrice = 10 * 3 + premium;
-
-        type = ElementType.Magnetic;
-        MessageBoxOn(ElementType.Magnetic);
+        NowType = ElementType.Magnetic;
+        Price(NowType);
+        MessageBoxOn(NowType);
     }
 
     #endregion
@@ -518,7 +555,7 @@ public class EventManager : MonoBehaviour
                 break;
 
             case ElementType.AssistedEnemy:
-                s = "<b> 支援型敵 </b>\n 移動はしない、ボート上に存在すると、毎ターン全ての敵のレベルを2倍にする";
+                s = "<b> 支援型敵 </b>\n 移動はしない、ボート上に存在すると、毎ターン全ての敵のレベルを2倍にする。主人公に当たったら破壊される。";
                 break;
 
             default:
@@ -535,17 +572,21 @@ public class EventManager : MonoBehaviour
         gm.State = GameState.GameSuspension;    //暂停接受输入
 
         //显示面板
-        string s = document(type);  //获得介绍文字
-        Message.text = s;           //更新文字
         MessageBox.transform.position = new Vector3(Screen.width / 2, Screen.height / 2, 0);    //指定面板的位置（屏幕中心）
         MessageBox.SetActive(true); //显示信息面板
         Confirm.SetActive(false);   //隐藏确认建造按钮
 
-        //如果是个建筑单位 且资金足够 显示拆除按钮
+        string s = document(type);  //获得介绍文字
+
+        //如果是个建筑单位 且资金足够
         if (type >= ElementType.Tower && type < ElementType.Access && Money.Instance.Numerical - 10 > 0)
         {
-            TearDown.SetActive(true);
+            NowType = type;             //获取到被拆除建筑的类型
+            TearDown.SetActive(true);   //显示拆除按钮
+            s = s + "\n\n" + "<color=#ffff00> 解体可能 </color>" + "\n解体すると " + Price(NowType) + " の建材が手に入れる" + "\n解体には 10 の金額を消費する";
         }
+
+        Message.text = s;           //更新文字
     }
     #endregion
 
