@@ -33,6 +33,7 @@ public class Tile : MonoBehaviour
 
     public bool moveThisTurn = false;       //记录方块是否发生过移动
     public bool mergedThisTurn = false;     //判断本回合是否已经进行过合并
+    public bool SlowBuff = false;           //是否被减速
 
     //在游戏管理器中存储关于所有图块的信息 该对象的坐标
     public int indRow;  //从0,0到7,7
