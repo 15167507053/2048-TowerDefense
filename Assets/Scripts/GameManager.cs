@@ -29,9 +29,9 @@ public enum ElementType
     Mall,       //商场
     Wall,       //防御塔
     Landmine,   //地雷
-    Trap,       //陷阱【】
+    Trap,       //陷阱
     Refuge,     //避难所
-    Magnetic,   //干扰磁场【】
+    Magnetic,   //干扰磁场
 
     //不可移动且不可拆的单位
     Access,     //主角进入避难所
