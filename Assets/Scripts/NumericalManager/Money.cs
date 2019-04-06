@@ -34,10 +34,10 @@ public class Money : MonoBehaviour
         Instance = this;
 
         ///初始化面板
-        //如果是第一次进行游戏 则初始化金钱为100
+        //如果是第一次进行游戏 则初始化金钱为300
         if (!PlayerPrefs.HasKey("Account") || PlayerPrefs.GetInt("Account") >= 3000)
         {
-            PlayerPrefs.SetInt("Account", 100);
+            PlayerPrefs.SetInt("Account", 300);
         }
         //获取到上一局所得的金钱
         money = PlayerPrefs.GetInt("Account");

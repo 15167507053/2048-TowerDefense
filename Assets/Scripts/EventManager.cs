@@ -10,12 +10,14 @@ public class EventManager : MonoBehaviour
 
     private GameManager gm;     //用于调用gamemanager脚本的方法
 
+    #region 游戏物体
     public GameObject Tile;             //用于测距
     public GameObject Construction;     //建造菜单
     public GameObject MessageBox;       //建筑说明面板
     public GameObject Confirm;          //建造确认按钮
     public GameObject TearDown;         //解体按钮
     public Text Message;                //说明文字
+    #endregion
 
     void Awake()
     {
@@ -30,10 +32,12 @@ public class EventManager : MonoBehaviour
     public int x;
     public int y;
 
+    //面板坐标的调整
     private Vector3 MenuPos;    //菜单坐标
     private Vector3 MsgPos;     //信息窗坐标
     private bool isAdjustment = false;  //是否已经发生过调整
 
+    //建造相关参数
     private ElementType NowType;       //被建造的建筑
     private int MaterialPrice = 0;  //造价.建材
     private int MoneyPrice = 0;     //造价.金钱
@@ -579,11 +583,21 @@ public class EventManager : MonoBehaviour
         string s = document(type);  //获得介绍文字
 
         //如果是个建筑单位 且资金足够
-        if (type >= ElementType.Tower && type < ElementType.Access && Money.Instance.Numerical - 10 > 0)
+        if (type >= ElementType.Tower && type < ElementType.Access)
         {
-            NowType = type;             //获取到被拆除建筑的类型
-            TearDown.SetActive(true);   //显示拆除按钮
-            s = s + "\n\n" + "<color=#ffff00> 解体可能 </color>" + "\n解体すると " + Price(NowType) + " の建材が手に入れる" + "\n解体には 10 の金額を消費する";
+            if (Money.Instance.Numerical - 10 >= 0)
+            {
+                NowType = type;             //获取到被拆除建筑的类型
+                TearDown.SetActive(true);   //显示拆除按钮
+                s = s + "\n\n" + "<color=#ffff00> 解体可能 </color>" + "\n解体すると " + Price(NowType) + " の建材が手に入れる" + "\n解体には 10 の金額を消費する";
+            }
+            //否则显示资金不足的消息
+            else
+            {
+                //NowType = type;
+                TearDown.SetActive(false);
+                s = s + "\n\n" + "<color=#ffff00> 解体には 10 の金が必要 </color>";
+            }
         }
 
         Message.text = s;           //更新文字

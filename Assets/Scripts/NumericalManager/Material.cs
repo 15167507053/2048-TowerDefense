@@ -33,7 +33,7 @@ public class Material : MonoBehaviour
         Instance = this;
 
         ///初始化面板
-        material = 0;       //初始建材为0
+        material = 8;       //初始建材为8
         materialText.text = material.ToString();
 
         //materialText.text = "0";    //初始建材为0

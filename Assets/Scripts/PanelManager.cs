@@ -56,7 +56,8 @@ public class PanelManager : MonoBehaviour
         Debug.Log("重置");
 
         //清空一切资产
-        PlayerPrefs.SetInt("Account", 100);
+        //PlayerPrefs.SetInt("Account", 300);
+        PlayerPrefs.DeleteKey("Account");
 
         Application.LoadLevel(Application.loadedLevel);
     }
