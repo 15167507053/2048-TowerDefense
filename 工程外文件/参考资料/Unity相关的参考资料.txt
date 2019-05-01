@@ -1,0 +1,56 @@
+	【main】
+范例1	失败	图文			另一种思路		http://www.gamehobby.cn/post/8
+范例3	成功	视频（英文生肉）	非常全面详细		https://www.youtube.com/watch?v=pY2SgdrBqn8&list=PL0cspzamL7Y6nOxSlxEfdoOTARXV67gHb
+
+范例4	未尝试	图文+视频（台湾	元素替换 主界面 ngui	https://105math218.weebly.com/2802336042295792048.html
+范例2	未尝试	图文						https://blog.csdn.net/StevenKyleLee/article/details/51930080
+
+我个人比较推荐的学习顺序 ：3→1→4
+不管你能否听懂3的英文说明 至少对于我使用的版本的unity（5.6.5f1）来说，是最不容易出现错误的，同时视频中详细的操作能够带你手把手的完成整个游戏的制作
+1的编者使用的是4.x的版本，而且是图文说明，可能是由于这个原因，我在学习的过程中出现了问题。因此就个人体验而言 我不太建议把1作为入门教程，我觉得他更适合用来为你提供一种新的设计思路
+4的视频是从进阶的部分开始的（我只看了开头好像是这样？），虽然也有从零开始的图文教程，但因为涉及的内容有点多 所以还是愿意把它归类到进阶阶段
+2由于对UI部分的介绍有点欠缺，代码的量很大而且还不齐（有些地方只提供了思路没有给代码），因此我觉得不适合用来做新手入门，同1一样更适合用来开拓思维
+
+
+	【other】
+提示面板
+http://gad.qq.com/article/detail/42195
+https://blog.csdn.net/alistair_chow/article/details/53107027
+
+Tooltip
+https://www.youtube.com/watch?v=uPmorHLPwnk	面板制作与触摸侦测
+https://www.youtube.com/watch?v=Jz6YDv3lMUo	指定窗口位置
+https://www.youtube.com/watch?v=bglMAlyYCEU	更改文字内容
+
+使用代码替换Image对象的source
+https://blog.csdn.net/u010848412/article/details/53373795（方法二
+
+2048+悔棋
+http://blog.grapedge.top/2018/10/unity-2048/
+
+滚动条
+http://gad.qq.com/article/detail/42927
+http://www.gimoo.net/t/1601/56a5c7f26a250.html
+
+打包时更改分辨率
+https://blog.csdn.net/qq527703883/article/details/78064867
+https://blog.csdn.net/gqj108/article/details/82493828
+https://www.cnblogs.com/mzsx/p/6098092.html
+关闭自动旋转
+https://blog.csdn.net/haobaworenle/article/details/54097713
+
+判断物体是否被SetActive
+https://blog.csdn.net/lxl_815520/article/details/53668591
+
+获取游戏对象自身的宽度和窗口宽度
+http://www.manew.com/thread-94287-1-1.html
+https://blog.csdn.net/techfield/article/details/84026697
+
+屏幕适配
+http://www.manew.com/thread-95671-1-1.html
+
+随内容自动拉伸
+https://blog.csdn.net/huaixiaoniu/article/details/78037737
+
+按钮随状态替换图片（Sprite Swap）
+https://blog.csdn.net/qq992817263/article/details/51754381

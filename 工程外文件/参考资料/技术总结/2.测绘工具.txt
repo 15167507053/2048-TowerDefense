@@ -1,0 +1,29 @@
+新建一个u2d的项目工程
+
+在Hierarchy面板上新建一个Canvas 伴随着会出现一个EventSystem 可以无视
+
+在project面板的assets目录下 新建两个文件夹 分别命名为Resouces（用于存放图片及其他资源）和Scripts（存放脚本） 并保存场景于根目录 命名为Scence（可随意）
+
+将自己准备的背景图和墙砖图片拖入Resouces中 unity会自动导入资源
+
+在Canvas中右键新建一个Image 用做背景 将其改名为background（也可以不改） 选中后将自己准备的背景图片拖入Image对象的Inspector面板中的Image-Source Image选框中（懒得准备图片的话也可以随便配个色将就一下） 并调整大小使其铺满整个Canvas
+
+接着继续在Canvas下 再新建一个Canvas（为了便于区分命名为gameCanvas）、以及一个Button、和一个InputField 按照自己的喜好调整他们的大小、位置和风格 例如我将InputField和Button中的Text全部设置为居中、并勾选了Best Fit（让字体根据窗口大小自动调整）
+
+在调整到满意后 复制一个InputField 将两个InputField分别重命名为rows和cols 然后将刚才在Canvas中新建的5个组件的锚点 全部与其本体的四个顶点对其 以此能够在程序因为自适应窗口而出现尺寸比例失调时依然能够按照现有比例保持自身所处的位置
+
+在Canvas外创建一个Image 命名为wallPrefab 将自己准备的墙砖图片赋给Source Image（也可以随便调个配色应付了事） 然后在Hierarchy面板中将其选中 拖回project面板的Resouces目录下 生成一个名为wallPrefab的预制体
+
+在Scripts中新建两个C# Scripts 分别命名为gameManage和AutoGridLayout 代码我会在稍后给出
+
+将gameManage添加至Canvas 会在Canvas的Inspector面板中新出现4个选框 rows和cols保持0不用理会 在Game Canvas的选框中、将Hierarchy面板中的gameCanvas组件拖入 在Wall Prefab选框中、将Resouces目录下的wallPrefab预制体拖入 这个脚本用于控制方块的生成
+
+然后在gameCanvas中添加AutoGridLayout脚本 如果有需要的话可以设置一下Spacing的内容（墙砖的间距） 其他设置全部保持默认就行 这个脚本会根据墙砖的数量和gameCanvas的大小来自动调整墙砖的尺寸
+
+最后在Button的Inspector面板中找到名为On Click()的最后一项 将Hierarchy面板中的Canvas拖入选框 然后在右上一点点的地方的下拉菜单中选择gameManage-CreateBtn() 为button绑定按下事件
+
+大功告成！运行程序并在输入框中输入希望生成的表格的行列数 然后点击按钮 即可在面板中生成指定行列数的表格
+
+是不是感觉自己浪费了时间做了一个很弱智的东西呢（逃
+
+如果有看不懂的地方可以留言或者私信 我会尝试重新组织语言尽可能将其解释清楚
