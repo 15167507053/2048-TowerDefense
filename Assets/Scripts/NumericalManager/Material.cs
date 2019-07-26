@@ -6,12 +6,8 @@ using UnityEngine.UI;
 ///各项资源数值管理
 public class Material : MonoBehaviour
 {
-
     private int material;   //建材
-
     public Text materialText;   //UI显示面板
-
-    public static Material Instance;    //对象实例 用于从外界调用该类的构造函数
 
     public int Numerical
     {
@@ -26,6 +22,8 @@ public class Material : MonoBehaviour
             materialText.text = material.ToString();
         }
     }
+
+    public static Material Instance;
 
     //在新游戏开始时被调用
     void Awake()

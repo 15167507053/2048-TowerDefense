@@ -6,12 +6,8 @@ using UnityEngine.UI;
 ///各项资源数值管理
 public class Power : MonoBehaviour
 {
-
     private int power;      //电力 <0时游戏失败
-
     public Text powerText;  //UI显示面板
-
-    public static Power Instance;    //对象实例 用于从外界调用该类的构造函数
 
     public int Numerical
     {
@@ -26,6 +22,8 @@ public class Power : MonoBehaviour
             powerText.text = power.ToString();
         }
     }
+
+    public static Power Instance;    //对象实例 用于从外界调用该类的构造函数
 
     //在新游戏开始时被调用
     void Awake()
