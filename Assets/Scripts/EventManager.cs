@@ -9,6 +9,7 @@ public class EventManager : MonoBehaviour
     public static EventManager Instance;   //供其他组件的脚本调用
 
     private GameManager gm;     //用于调用gamemanager脚本的方法
+    private FunctionManager fm;
 
     #region 游戏物体
     public GameObject Tile;             //用于测距
@@ -26,11 +27,13 @@ public class EventManager : MonoBehaviour
 
         //获取到gamemanager
         gm = FindObjectOfType<GameManager>();
+        fm = FindObjectOfType<FunctionManager>();
     }
 
+    #region 变量
     //被点击的方块的坐标
-    public int x;
-    public int y;
+    [HideInInspector]
+    public int x, y;
 
     //面板坐标的调整
     private Vector3 MenuPos;    //菜单坐标
@@ -38,12 +41,12 @@ public class EventManager : MonoBehaviour
     private bool isAdjustment = false;  //是否已经发生过调整
 
     //建造相关参数
-    private ElementType NowType;       //被建造的建筑
+    private ElementType NowType;    //被建造的建筑
     private int MaterialPrice = 0;  //造价.建材
     private int MoneyPrice = 0;     //造价.金钱
+    #endregion
 
-    #region 建造相关菜单
-
+    #region 建造相关窗口
     //建造菜单 并不直接通过按钮调用 而是【按钮调用tile脚本的函数后】再调用本函数发生事件
     public void ConstructionOn(Vector3 position)
     {
@@ -91,7 +94,7 @@ public class EventManager : MonoBehaviour
     {
         //恢复按钮的样式（通过启用按钮
         //gm.AllTiles[y, x].GetComponent<Button>().interactable = true;     //采用单个按钮复原时偶尔会出现复原不了的bug
-        gm.CountOff(NowType);  //使用【类型单位计数】的附带功能 关闭所有的按钮禁用状态
+        fm.CountOff(NowType);  //使用【类型单位计数】的附带功能 关闭所有的按钮禁用状态
 
         //短时间内不接受移动输入操作
         //float timer = Time.time;    //关闭菜单的时间
@@ -242,7 +245,7 @@ public class EventManager : MonoBehaviour
                     s4 = "<color=#ff0000>\n 建材不足</color>";
                     Confirm.SetActive(false);
                 }
-                else if (gm.CountOff(ElementType.Refuge) != 0)
+                else if (fm.CountOff(ElementType.Refuge) != 0)
                 {
                     s4 = "<color=#ff0000>\n 避难所は一個しか建てない</color>";
                     Confirm.SetActive(false);
@@ -342,7 +345,7 @@ public class EventManager : MonoBehaviour
         Money.Instance.Numerical -= MoneyPrice;         //减去相应的金钱（可负债
 
         //根据类型调用建造函数
-        gm.Generate(NowType, x, y);
+        fm.Generate(NowType, x, y);
     }
 
     //拆除建筑
@@ -368,7 +371,7 @@ public class EventManager : MonoBehaviour
         switch (type)
         {
             case ElementType.Tower:
-                premium = gm.CountOff(ElementType.Tower) * 2;   //造一座塔涨价 [x*2]
+                premium = fm.CountOff(ElementType.Tower) * 2;   //造一座塔涨价 [x*2]
                 MaterialPrice = 2 * 8;            //造价.建材 = 2的n倍 + 加价
                 MoneyPrice = 10 * 5 + premium;    //造价.金钱 = 10的n倍 + 加价
                 break;
@@ -385,7 +388,7 @@ public class EventManager : MonoBehaviour
                 break;
 
             case ElementType.Power:
-                premium = gm.CountOff(ElementType.Power);
+                premium = fm.CountOff(ElementType.Power);
                 if (premium < 3)
                 {
                     premium = 0;    //如果数量小于3个 不加价
@@ -399,7 +402,7 @@ public class EventManager : MonoBehaviour
                 break;
 
             case ElementType.Mall:
-                premium = gm.CountOff(ElementType.Mall);
+                premium = fm.CountOff(ElementType.Mall);
                 if (premium < 3)
                 {
                     premium = 0;
@@ -434,6 +437,7 @@ public class EventManager : MonoBehaviour
         //返回指定类型所需建材的一半 用于在拆除该建筑时返还
         return MaterialPrice / 2;
     }
+
     #region 各个建筑按钮
     //塔
     public void Tower()
@@ -450,6 +454,7 @@ public class EventManager : MonoBehaviour
         MessageBoxOn(NowType);
     }
     //地雷
+    [HideInInspector]
     public int LCount = 0;     //记录本关内地雷的建造数量
     public void Landmine()
     {
@@ -602,182 +607,6 @@ public class EventManager : MonoBehaviour
 
         Message.text = s;           //更新文字
     }
-    #endregion
-
-
-    #region 建造（源码备份
-    //建造事件
-    //public void Tower()
-    //{
-    //    //Debug.Log("攻击塔");
-
-    //    int premium = gm.CountOff(ElementType.Tower) * 2;   //系数 造一座塔涨价 [x*2]
-    //    int MaterialPrice = 2 * 8;            //造价.建材 = 2的n倍 + 加价
-    //    int MoneyPrice = 10 * 5 + premium;    //造价.金钱 = 10的n倍 + 加价
-
-    //    //如果有足够的建材进行建造
-    //    if (Material.Instance.Numerical - MaterialPrice >= 0)
-    //    {
-    //        //生成相应建筑
-    //        //gm.Generate(ElementType.Tower);
-    //        if (gm.Generate(ElementType.Tower, x, y))
-    //        {
-    //            //仅在建造成功时消耗资源
-    //            Consume(MaterialPrice, MoneyPrice);
-    //        }
-    //        else
-    //        {
-    //            enough(1);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        enough(2);
-    //    }
-    //    //关闭建造菜单
-    //    ConstructionOff();
-    //}
-    //public void Wall()
-    //{
-    //    //Debug.Log("防御墙");
-
-    //    int MaterialPrice = 2 * 1;
-    //    int MoneyPrice = 10 * 0;
-
-    //    if (Material.Instance.Numerical - MaterialPrice >= 0)
-    //    {
-    //        //gm.Generate(ElementType.Wall);
-    //        if (gm.Generate(ElementType.Wall, x, y))
-    //        {
-    //            Consume(MaterialPrice, MoneyPrice);
-    //        }
-    //        else
-    //        {
-    //            enough(1);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        enough(2);
-    //    }
-    //    ConstructionOff();
-    //}
-    //public void Landmine()
-    //{
-    //    //Debug.Log("地雷");
-
-    //    int premium = 5 * gm.count;    //每造一个雷贵10块
-    //    int MaterialPrice = 2 * 0;
-    //    int MoneyPrice = 10 * 1 + premium;
-
-    //    if (Money.Instance.Numerical >= 10)
-    //    {
-    //        //gm.Generate(ElementType.Landmine);
-    //        if (gm.Generate(ElementType.Landmine, x, y))
-    //        {
-    //            Consume(MaterialPrice, MoneyPrice);
-    //            gm.count++;
-    //        }
-    //        else
-    //        {
-    //            enough(1);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        enough(2);
-    //    }
-    //    ConstructionOff();
-    //}
-
-    //public void Power()
-    //{
-    //    //Debug.Log("发电站");
-
-    //    int premium = gm.CountOff(ElementType.Power);
-    //    if (premium < 5)
-    //    {
-    //        premium = 0;
-    //    }
-    //    else
-    //    {
-    //        premium -= 3;
-    //    }
-    //    int MaterialPrice = 2 * 2 + premium;
-    //    int MoneyPrice = 10 * 1 + premium;
-
-    //    if (Material.Instance.Numerical - MaterialPrice >= 0)
-    //    {
-    //        //gm.Generate(ElementType.Power);
-    //        if (gm.Generate(ElementType.Power, x, y))
-    //        {
-    //            Consume(MaterialPrice, MoneyPrice);
-    //        }
-    //        else
-    //        {
-    //            enough(1);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        enough(2);
-    //    }
-    //    ConstructionOff();
-    //}
-    //public void Mall()
-    //{
-    //    //Debug.Log("商场");
-
-    //    int premium = gm.CountOff(ElementType.Mall);
-    //    if (premium < 3)
-    //    {
-    //        premium = 0;
-    //    }
-    //    else
-    //    {
-    //        premium -= 2;
-    //    }
-    //    int MaterialPrice = 2 * 3 + premium;
-    //    int MoneyPrice = 10 * 2 + premium;
-
-    //    if (Material.Instance.Numerical - MaterialPrice >= 0)
-    //    {
-    //        //gm.Generate(ElementType.Mall);
-    //        if (gm.Generate(ElementType.Mall, x, y))
-    //        {
-    //            Consume(MaterialPrice, MoneyPrice);
-    //        }
-    //        else
-    //        {
-    //            enough(1);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        enough(2);
-    //    }
-    //    ConstructionOff();
-    //}
-
-    //消耗资源
-    //private void Consume(int MaterialPrice, int MoneyPrice)
-    //{
-    //    Material.Instance.Numerical -= MaterialPrice;   //减去相应的建材
-    //    Money.Instance.Numerical -= MoneyPrice;         //减去相应的金钱（可负债
-    //}
-    //造价不足时的提示信息
-    //private void enough(int m)
-    //{
-    //    switch (m)
-    //    {
-    //        case 1:
-    //            Debug.Log("建造失败");
-    //            break;
-    //        case 2:
-    //            Debug.Log("造价不足");
-    //            break;
-    //    }
-    //}
     #endregion
 
 }

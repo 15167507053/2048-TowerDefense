@@ -8,14 +8,13 @@ public class PanelManager : MonoBehaviour
     private GameManager gm;
     public static PanelManager Instance;
 
-    #region 胜利或失败面板
+    #region 胜负面板对象
     public Text TitleText;              //胜利或失败的文字
     public Text MessageText;            //失败理由 & 胜利积分
     public GameObject GameOverPanel;    //结束面板
     public GameObject ContinueBtn;      //继续游戏按钮 仅在游戏胜利时显示
     #endregion
-
-    #region 菜单面板
+    #region 菜单面板对象
     public GameObject OptionsPanel;     //菜单面板
     public GameObject ButtonList;       //默认的按钮面板
     public GameObject RuleText;         //规则说明

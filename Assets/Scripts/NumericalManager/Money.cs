@@ -6,12 +6,8 @@ using UnityEngine.UI;
 ///各项资源数值管理
 public class Money : MonoBehaviour
 {
-
     private int money;      //金钱 可负债
-
     public Text moneyText;  //UI显示面板
-
-    public static Money Instance;    //对象实例 用于从外界调用该类的构造函数
 
     public int Numerical
     {
@@ -27,6 +23,8 @@ public class Money : MonoBehaviour
             moneyText.text = money.ToString();
         }
     }
+
+    public static Money Instance;    //对象实例 用于从外界调用该类的构造函数
 
     //在新游戏开始时被调用
     void Awake()
