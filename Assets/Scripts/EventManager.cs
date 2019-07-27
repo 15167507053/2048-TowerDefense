@@ -67,7 +67,9 @@ public class EventManager : MonoBehaviour
             position.x = Screen.width - selfWidth / 2;
         }
         #endregion
+
         MenuPos = MsgPos = position;    //保存当前坐标 并赋值给信息窗
+
         #region 设定菜单出现的位置
         float selfHeight = (Tile.GetComponent<RectTransform>().sizeDelta.y) * transform.localScale.y;   //获取一个格子的高度
         //如果触点在上半屏 (下6上5

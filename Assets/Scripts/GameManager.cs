@@ -46,6 +46,8 @@ public class GameManager : MonoBehaviour
     #region 声明变量
     public GameState State;     //游戏状态
 
+    private const int BORDER = 2;   //主角可行动的边界
+
     [HideInInspector]
     public bool won = false;   //游戏是否已经取得胜利
 
@@ -113,7 +115,7 @@ public class GameManager : MonoBehaviour
 
         #region 开局时新建【1个主角】【2个建材】【x个墙壁】
         //fm.Generate(ElementType.Player);
-        fm.Generate(ElementType.Player, 2, 2); //指定位置生成主角
+        fm.Generate(ElementType.Player, BORDER, BORDER); //指定位置生成主角
         fm.Generate(ElementType.Material);
         fm.Generate(ElementType.Material);
         //fm.Generate(ElementType.Enemy);
@@ -255,9 +257,17 @@ public class GameManager : MonoBehaviour
                 LineOfTiles[i].moveThisTurn = true;     //本格发生过移动
             }
 
+            //如果是主角 就限定他的移动范围
+            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType == ElementType.Player && i >= BORDER)
+            {
+                LineOfTiles[i].TileType = LineOfTiles[i + 1].TileType;
+                LineOfTiles[i + 1].TileType = ElementType.Empty;
+                return true;
+            }
+
             //若方块【自身为空】，且后方有一个【非空】&【非建筑】&【没有发生过碰撞】的方块
             else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType != ElementType.Empty &&
-                LineOfTiles[i + 1].TileType < ElementType.Tower && LineOfTiles[i + 1].mergedThisTurn == false)
+                LineOfTiles[i + 1].TileType < ElementType.Tower && LineOfTiles[i + 1].mergedThisTurn == false && LineOfTiles[i + 1].TileType > ElementType.Player)
             {
                 //通用的移动代码
                 LineOfTiles[i].TileLevel = LineOfTiles[i + 1].TileLevel;    //将后方方块的等级转移到自己身上
@@ -336,7 +346,6 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i + 1].TileType == ElementType.Material && /*LineOfTiles[i].TileLevel == LineOfTiles[i + 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i + 1].mergedThisTurn == false)
                         {
-                            //LineOfTiles[i].TileLevel *= 2;      //等级翻倍
                             LineOfTiles[i].TileLevel += LineOfTiles[i + 1].TileLevel;      //增加等级
                             LineOfTiles[i].UpdateTile();        //更新方块内容
                             LineOfTiles[i + 1].TileLevel = 0;   //清空前一个方块的等级
@@ -379,7 +388,6 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i + 1].TileType == ElementType.Enemy && /*LineOfTiles[i].TileLevel == LineOfTiles[i + 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i + 1].mergedThisTurn == false)
                         {
-                            //LineOfTiles[i].TileLevel *= 2;      //等级翻倍
                             LineOfTiles[i].TileLevel += LineOfTiles[i + 1].TileLevel;
                             LineOfTiles[i].UpdateTile();        //更新样式
                             LineOfTiles[i + 1].TileLevel = 0;   //清空上一个方块的等级
@@ -611,9 +619,17 @@ public class GameManager : MonoBehaviour
                 LineOfTiles[i].moveThisTurn = true;     //本格发生过移动
             }
 
+            //主角的移动
+            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType == ElementType.Player && i < LineOfTiles.Length - BORDER)
+            {
+                LineOfTiles[i].TileType = LineOfTiles[i - 1].TileType;
+                LineOfTiles[i - 1].TileType = ElementType.Empty;
+                return true;
+            }
+
             //正常移动
             else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType != ElementType.Empty &&
-                LineOfTiles[i - 1].TileType < ElementType.Tower && LineOfTiles[i - 1].mergedThisTurn == false)
+                LineOfTiles[i - 1].TileType < ElementType.Tower && LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[i - 1].TileType > ElementType.Player)
             {
                 LineOfTiles[i].TileLevel = LineOfTiles[i - 1].TileLevel;
                 LineOfTiles[i].TileType = LineOfTiles[i - 1].TileType;
@@ -684,7 +700,6 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i - 1].TileType == ElementType.Material && /*LineOfTiles[i].TileLevel == LineOfTiles[i - 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i - 1].mergedThisTurn == false)
                         {
-                            //LineOfTiles[i].TileLevel *= 2;
                             LineOfTiles[i].TileLevel += LineOfTiles[i - 1].TileLevel;
                             LineOfTiles[i].UpdateTile();
                             LineOfTiles[i - 1].TileLevel = 0;
@@ -723,7 +738,6 @@ public class GameManager : MonoBehaviour
                         if (LineOfTiles[i - 1].TileType == ElementType.Enemy && /*LineOfTiles[i].TileLevel == LineOfTiles[i - 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i - 1].mergedThisTurn == false)
                         {
-                            //LineOfTiles[i].TileLevel *= 2;
                             LineOfTiles[i].TileLevel += LineOfTiles[i - 1].TileLevel;
                             LineOfTiles[i].UpdateTile();
                             LineOfTiles[i - 1].TileLevel = 0;
@@ -1078,7 +1092,7 @@ public class GameManager : MonoBehaviour
         //制造一个敌人
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            fm.Generate(ElementType.BuilderEnemy);
+            fm.Generate(ElementType.Enemy);
 
         }
         #endregion

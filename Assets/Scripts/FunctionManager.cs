@@ -125,6 +125,7 @@ public class FunctionManager : MonoBehaviour
                 {
                     gm.AllTiles[y, j].TileLevel = 0;
                     gm.AllTiles[y, j].TileType = ElementType.Empty;
+                    gm.AllTiles[y, j].SlowBuff = false;
 
                     attack = true;
 
@@ -168,6 +169,8 @@ public class FunctionManager : MonoBehaviour
                     //清空敌人的等级和样式
                     gm.AllTiles[i, x].TileLevel = 0;
                     gm.AllTiles[i, x].TileType = ElementType.Empty;
+                    //解除减速buff
+                    gm.AllTiles[i, x].SlowBuff = false;
 
                     //关闭攻击开关
                     attack = true;
