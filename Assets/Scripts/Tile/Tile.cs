@@ -137,8 +137,11 @@ public class Tile : MonoBehaviour
             case ElementType.AssistedEnemy: //支援型敌人
                 ApplyStyleFromHolder(13);
                 break;
-            case ElementType.Access:
+            case ElementType.Access:        //主角进入避难所
                 ApplyStyleFromHolder(14);
+                break;
+            case ElementType.Hospital:
+                ApplyStyleFromHolder(15);
                 break;
 
             default:
