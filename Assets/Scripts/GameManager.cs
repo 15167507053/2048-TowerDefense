@@ -10,7 +10,7 @@ public enum GameState
     WaitingForMoveToEnd,    //等待动画结束
 }
 
-//储存方块元素的类型
+//各种单位
 public enum ElementType
 {
     Empty = -1, //空
@@ -19,7 +19,7 @@ public enum ElementType
     Player = 0,     //主角
     Material,       //建材
     TowerEnemy,     //远程型敌人
-    //可近战单位
+    ///↑且 可近战单位
     Enemy,          //敌人
     BuilderEnemy,   //造墙型敌人
 
@@ -27,13 +27,15 @@ public enum ElementType
     Tower,      //攻击塔
     Power,      //发电站
     Mall,       //商场
-    Wall,       //防御塔
+    Wall,       //防御墙
+    Hospital,   //医院
+    ///↑且 有特殊碰撞规则的单位
     Landmine,   //地雷
     Trap,       //陷阱
     Refuge,     //避难所
     Magnetic,   //干扰磁场
 
-    //不可移动且不可拆的单位
+    ///不可移动且不可拆的单位
     Access,         //主角进入避难所
     AssistedEnemy,  //支援型敌人
 }
@@ -47,13 +49,15 @@ public class GameManager : MonoBehaviour
     public GameState State;     //游戏状态
 
     private const int BORDER = 2;   //主角可行动的边界
+    private const int HPtopLimit = 8;   //玩家血量上限
 
     [HideInInspector]
     public bool won = false;   //游戏是否已经取得胜利
 
-    private bool move = false; //玩家是否发生过移动
-    private int turn = 0;      //记录回合数
+    [HideInInspector]
+    public int turn = 0;      //记录回合数
 
+    private bool move = false;          //玩家是否发生过移动
     private bool RefugeTurn = false;    //记录是否在本回合进入避难所
     private bool BuffTurn = false;      //记录是否在本回合被添加了减速buff
     #endregion
@@ -192,7 +196,10 @@ public class GameManager : MonoBehaviour
 
                 if ((turn % 15 == 0))
                 {
-                    fm.Generate(ElementType.AssistedEnemy);    //每15个回合出现一个支援兵
+                    //限定支援兵出现的位置
+                    int Xaxis = Random.Range(BORDER, rows.Count - BORDER);
+                    int Yaxit = Random.Range(BORDER, colums.Count - BORDER);
+                    fm.Generate(ElementType.AssistedEnemy, Yaxit, Xaxis);    //每15个回合出现一个支援兵
 
                     if (turn > 30)
                     {
@@ -231,6 +238,8 @@ public class GameManager : MonoBehaviour
                 move = false;       //本回合主角还未发生移动
                 RefugeTurn = false; //本回合没有进入避难所
                 BuffTurn = false;   //本回合还未添加减速buff
+
+
             }
         }
     }
@@ -258,10 +267,12 @@ public class GameManager : MonoBehaviour
             }
 
             //如果是主角 就限定他的移动范围
-            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType == ElementType.Player && i >= BORDER)
+            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType == ElementType.Player &&
+                LineOfTiles[i + 1].mergedThisTurn == false && i >= BORDER)
             {
                 LineOfTiles[i].TileType = LineOfTiles[i + 1].TileType;
                 LineOfTiles[i + 1].TileType = ElementType.Empty;
+                LineOfTiles[i].moveThisTurn = true;
                 return true;
             }
 
@@ -620,10 +631,12 @@ public class GameManager : MonoBehaviour
             }
 
             //主角的移动
-            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType == ElementType.Player && i < LineOfTiles.Length - BORDER)
+            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType == ElementType.Player &&
+                LineOfTiles[i - 1].mergedThisTurn == false && i < LineOfTiles.Length - BORDER)
             {
                 LineOfTiles[i].TileType = LineOfTiles[i - 1].TileType;
                 LineOfTiles[i - 1].TileType = ElementType.Empty;
+                LineOfTiles[i].moveThisTurn = true;
                 return true;
             }
 
@@ -946,6 +959,13 @@ public class GameManager : MonoBehaviour
                         Money.Instance.Numerical += 5; //获得金钱 （根据建筑等级？
                     }
                     break;
+                case ElementType.Hospital:
+                    if (move && HitPoint.Instance.Numerical < HPtopLimit)
+                    {
+                        Money.Instance.Numerical -= 10;     //消耗金钱
+                        HitPoint.Instance.Numerical += 1;   //回复血量 最大8点血
+                    }
+                    break;
                 #endregion
 
                 #region 我方建筑行为
@@ -1094,6 +1114,13 @@ public class GameManager : MonoBehaviour
         {
             fm.Generate(ElementType.Enemy);
 
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            int Xaxis = Random.Range(BORDER, rows.Count - BORDER);
+            int Yaxit = Random.Range(BORDER, colums.Count - BORDER);
+            fm.Generate(ElementType.AssistedEnemy, Yaxit, Xaxis);
+            Debug.Log("x；" + Yaxit + " ,y:" + Xaxis);
         }
         #endregion
 

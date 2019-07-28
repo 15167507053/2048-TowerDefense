@@ -121,12 +121,12 @@ public class EventManager : MonoBehaviour
         string s3 = "\n\n 建材：" + MaterialPrice + " , お金：" + MoneyPrice; //造价
         string s4 = ""; //可否建造
 
+        //按钮
         switch (type)
         {
             case ElementType.Tower:
                 #region 塔
                 //载入建筑说明文字
-                //s1 = "<b> 攻撃タワー </b>";
                 s2 = document(ElementType.Tower);
 
                 //判断是否可建造
@@ -267,6 +267,30 @@ public class EventManager : MonoBehaviour
                 if (Material.Instance.Numerical - MaterialPrice < 0)
                 {
                     s4 = "<color=#ff0000>\n 建材不足</color>";
+                    Confirm.SetActive(false);
+                }
+                else
+                {
+                    s4 = "<color=#00ff00>\n 建造可能</color>";
+                    Confirm.SetActive(true);
+                }
+                #endregion
+                break;
+
+            case ElementType.Hospital:
+                #region 医院
+                s2 = document(ElementType.Hospital);
+
+                int w = 5 - gm.turn % 5;    //回合数能被五整除时才进行建造
+
+                if (Material.Instance.Numerical - MaterialPrice < 0)
+                {
+                    s4 = "<color=#ff0000>\n 建材不足</color>";
+                    Confirm.SetActive(false);
+                }
+                else if (w != 5)
+                {
+                    s4 = "<color=#ff0000>\n 後" + w + "ターンを待ってください</color>";
                     Confirm.SetActive(false);
                 }
                 else
@@ -434,6 +458,12 @@ public class EventManager : MonoBehaviour
                 MoneyPrice = 10 * 3 + premium;
                 break;
 
+            case ElementType.Hospital:
+                premium = fm.CountOff(ElementType.Hospital) * 2;
+                MaterialPrice = 2 * 5;
+                MoneyPrice = 10 * 3 + premium;
+                break;
+
         }
 
         //返回指定类型所需建材的一半 用于在拆除该建筑时返还
@@ -497,6 +527,13 @@ public class EventManager : MonoBehaviour
     public void Magnetic()
     {
         NowType = ElementType.Magnetic;
+        Price(NowType);
+        MessageBoxOn(NowType);
+    }
+    //医院
+    public void Hospital()
+    {
+        NowType = ElementType.Hospital;
         Price(NowType);
         MessageBoxOn(NowType);
     }
@@ -567,6 +604,10 @@ public class EventManager : MonoBehaviour
 
             case ElementType.AssistedEnemy:
                 s = "<b> 支援型敵 </b>\n 移動はしない、ボート上に存在すると、毎ターン全ての敵のレベルを2倍にする。主人公に当たったら破壊される。";
+                break;
+
+            case ElementType.Hospital:
+                s = "<b> 医院 </b>\n 毎5ターンで主人公のHPを１点回復する、上限は8点まで、回復するには金がかかる。";
                 break;
 
             default:
