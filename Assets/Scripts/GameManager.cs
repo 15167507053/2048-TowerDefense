@@ -152,61 +152,61 @@ public class GameManager : MonoBehaviour
             ResetMergedFlags();     //清空所有方块上的开关
 
             #region 触发【4.移动】【5.合并】【6.消耗】方法
-            //控制随机步数的移动
-            int ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
-            int ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
+            //控制随机步数的移动【存在bug被禁用】（当1行/列中存在多个单位时 第一个移动的单位回消耗掉一些随机数 导致第二个单位只能移动很小的距离）
+            //int ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
+            //int ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
             //不需要随机时 启用被注释代码
-            //int ranOfRow = rows.Count;
-            //int ranOfCol = colums.Count;
+            int ranOfRow = rows.Count;
+            int ranOfCol = colums.Count;
             switch (md)
             {
                 case MoveDirection.Down:    //下
                     for (int i = 0; i < colums.Count; i++)
                     {
-                        while (MakeOneMoveDownIndex(colums[i]) && ranOfRow > 0)
+                        while (MakeOneMoveDownIndex(colums[i]) /*&& ranOfRow > 0*/)
                         {
                             //i为行/列号 逐行传递给移动函数 在函数内逐个移动物体
                             moveMade = true;
                             ranOfRow--;
                         }
-                        ranOfRow = rows.Count;  //不需要随机步数移动就注释下句代码
-                        ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
+                        //ranOfRow = rows.Count;  //不需要随机步数移动就注释下句代码
+                        //ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
                     }
                     break;
                 case MoveDirection.Left:    //左
                     for (int i = 0; i < rows.Count; i++)
                     {
-                        while (MakeOneMoveDownIndex(rows[i]) && ranOfCol > 0)
+                        while (MakeOneMoveDownIndex(rows[i]) /*&& ranOfCol > 0*/)
                         {
                             moveMade = true;
                             ranOfCol--;
                         }
-                        ranOfCol = colums.Count;
-                        ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
+                        //ranOfCol = colums.Count;
+                        //ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
                     }
                     break;
                 case MoveDirection.Right:   //右
                     for (int i = 0; i < rows.Count; i++)
                     {
-                        while (MakeOneMoveUpIndex(rows[i]) && ranOfCol > 0)
+                        while (MakeOneMoveUpIndex(rows[i]) /*&& ranOfCol > 0*/)
                         {
                             moveMade = true;
                             ranOfCol--;
                         }
-                        ranOfCol = colums.Count;
-                        ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
+                        //ranOfCol = colums.Count;
+                        //ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
                     }
                     break;
                 case MoveDirection.Up:     //上
                     for (int i = 0; i < colums.Count; i++)
                     {
-                        while (MakeOneMoveUpIndex(colums[i]) && ranOfRow > 0)
+                        while (MakeOneMoveUpIndex(colums[i]) /*&& ranOfRow > 0*/)
                         {
                             moveMade = true;
                             ranOfRow--;
                         }
-                        ranOfRow = rows.Count;
-                        ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
+                        //ranOfRow = rows.Count;
+                        //ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
                     }
                     break;
             }
