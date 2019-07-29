@@ -31,7 +31,7 @@ public class Power : MonoBehaviour
         Instance = this;
 
         ///初始化面板
-        power = 100;        //初始电力为100
+        power = 200;        //初始电力为100
         powerText.text = power.ToString();
 
         //powerText.text = "100";      //初始电力为100
