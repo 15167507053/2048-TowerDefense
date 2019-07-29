@@ -8,7 +8,7 @@
 
 5. 在【GameManager】脚本中设定该单位的出场时机 建筑单位见下
 
-6. 如果这个单位在回合结束时会触发特殊的事件 在【GameManager】的任意位置定义事件函数 并于 UpdateEmptyTiles 方法中设定调用时机
+6. 如果这个单位在回合结束时会触发特殊的事件 在【FunctionManager】的任意位置定义事件函数 并于 【GameManager】的UpdateEmptyTiles 方法中设定调用时机
 
 7. 在【EventManager】脚本的document函数中填写该单位的说明文字
 
