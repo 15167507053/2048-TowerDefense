@@ -1,26 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-//游戏状态 用于配合动画效果
+//游戏状态
 public enum GameState
 {
     Playing,                //可操作
     GameSuspension,         //不接受输入
-    WaitingForMoveToEnd,     //等待移动结束
+    WaitingForMoveToEnd,    //等待动画结束
 }
 
-//定义一个枚举来储存方块元素类型
+//各种单位
 public enum ElementType
 {
     Empty = -1, //空
 
     ///可移动的单位
-    Material = 0,   //建材
-    Player,         //主角
+    Player = 0,     //主角
+    Material,       //建材
     TowerEnemy,     //远程型敌人
-    //可近战单位
+    ///↑且 可近战单位
     Enemy,          //敌人
     BuilderEnemy,   //造墙型敌人
 
@@ -28,13 +27,15 @@ public enum ElementType
     Tower,      //攻击塔
     Power,      //发电站
     Mall,       //商场
-    Wall,       //防御塔
+    Wall,       //防御墙
+    Hospital,   //医院
+    ///↑且 有特殊碰撞规则的单位
     Landmine,   //地雷
     Trap,       //陷阱
     Refuge,     //避难所
     Magnetic,   //干扰磁场
 
-    //不可移动且不可拆的单位
+    ///不可移动且不可拆的单位
     Access,         //主角进入避难所
     AssistedEnemy,  //支援型敌人
 }
@@ -42,58 +43,58 @@ public enum ElementType
 ///主控流程
 public class GameManager : MonoBehaviour
 {
+    private FunctionManager fm; //调用FunctionManager中的方法
+
+    #region 声明变量
     public GameState State;     //游戏状态
 
+    private const int BORDER = 2;   //主角可行动的边界
+    private const int HPtopLimit = 8;   //玩家血量上限
+
+    [HideInInspector]
     public bool won = false;   //游戏是否已经取得胜利
 
-    private bool move = false; //玩家是否发生过移动
-    private int turn = 0;      //记录回合数
+    [HideInInspector]
+    public int turn = 0;      //记录回合数
+
+    private bool move = false;          //玩家是否发生过移动
     private bool RefugeTurn = false;    //记录是否在本回合进入避难所
-    private bool BuffTurn = false;      //记录是否在本回合被添加了buff
+    private bool BuffTurn = false;      //记录是否在本回合被添加了减速buff
+    #endregion
 
     #region 行列与方块列表
-
-    //用于获取所有的方块 
-    public Tile[,] AllTiles = new Tile[11, 8];
+    public Tile[,] AllTiles = new Tile[11, 8];  //获取所有的方块
 
     //创建行和列的列表 用于移动
     private List<Tile[]> colums = new List<Tile[]>();
     private List<Tile[]> rows = new List<Tile[]>();
 
-    //用于获取空方快 在产生新方块时用于标识
-    private List<Tile> EmptyTiles = new List<Tile>();
-
+    public List<Tile> EmptyTiles = new List<Tile>();   //获取空方快 在产生新方块时用于标识
     #endregion
 
     /// 1.新游戏开始时的初始化
     void Start()
     {
-        //新游戏开始
-        //over = true;    //游戏处于开启状态
-        State = GameState.Playing;
-        won = false;    //本关还未取得胜利
-        move = false;
-        turn = 3;       //从第3回合开始（为了在三回合后 产生第一个敌人
+        //新游戏开始 初始化数据
+        State = GameState.Playing;  //可接受操作
+        won = false;           //本关还未取得胜利
+        turn = 3;              //从第3回合开始（为了在三回合后 产生第一个敌人
+        move = false;          //玩家未发生移动
         RefugeTurn = false;    //还未进入避难所
         BuffTurn = false;      //还未触发减速buff
         EventManager.Instance.LCount = 0;      //地雷还未建造过
 
-        //游戏开始时清除场地
+        #region 游戏开始时清除场地
         Tile[] AllTilesOneDim = GameObject.FindObjectsOfType<Tile>();   //获取到所有的方块
         foreach (Tile t in AllTilesOneDim)
         {
             t.TileType = ElementType.Empty;     //游戏开始时清除场地 ，清除所有方块上的信息
             AllTiles[t.indRow, t.indCol] = t;   //在游戏管理器中存储关于所有图块的信息 ，在每一个方块上都储存其行号和列号
             EmptyTiles.Add(t);                  //将当前位置存入空图块列表
-
-            //if(t.indRow == 0 && t.indCol == 0)
-            //{
-            //    Generate(ElementType.Player, t.indRow, t.indCol);   //在指定位置创建主角
-            //}
-
         }
+        #endregion
 
-        # region 初始化 行和列 的列表
+        #region 初始化 行和列 的列表
         colums.Add(new Tile[] { AllTiles[0, 0], AllTiles[1, 0], AllTiles[2, 0], AllTiles[3, 0], AllTiles[4, 0], AllTiles[5, 0], AllTiles[6, 0], AllTiles[7, 0], AllTiles[8, 0], AllTiles[9, 0], AllTiles[10, 0] });
         colums.Add(new Tile[] { AllTiles[0, 1], AllTiles[1, 1], AllTiles[2, 1], AllTiles[3, 1], AllTiles[4, 1], AllTiles[5, 1], AllTiles[6, 1], AllTiles[7, 1], AllTiles[8, 1], AllTiles[9, 1], AllTiles[10, 1] });
         colums.Add(new Tile[] { AllTiles[0, 2], AllTiles[1, 2], AllTiles[2, 2], AllTiles[3, 2], AllTiles[4, 2], AllTiles[5, 2], AllTiles[6, 2], AllTiles[7, 2], AllTiles[8, 2], AllTiles[9, 2], AllTiles[10, 2] });
@@ -116,87 +117,23 @@ public class GameManager : MonoBehaviour
         rows.Add(new Tile[] { AllTiles[10, 0], AllTiles[10, 1], AllTiles[10, 2], AllTiles[10, 3], AllTiles[10, 4], AllTiles[10, 5], AllTiles[10, 6], AllTiles[10, 7] });
         #endregion
 
-        //开局时新建【1个主角】【2个建材】【x个墙壁】
-        Generate(ElementType.Player);
-        Generate(ElementType.Material);
-        Generate(ElementType.Material);
-        //Generate(ElementType.Enemy);
+        #region 开局时新建【1个主角】【2个建材】【x个墙壁】
+        //fm.Generate(ElementType.Player);
+        fm.Generate(ElementType.Player, BORDER, BORDER); //指定位置生成主角
+        fm.Generate(ElementType.Material);
+        fm.Generate(ElementType.Material);
+        //fm.Generate(ElementType.Enemy);
 
         int x = 3;
         while (x > 0)
         {
-            Generate(ElementType.Wall);
+            fm.Generate(ElementType.Wall);
             x--;
         }
+        #endregion
     }
 
-    #region 2.建造一个指定类型的单位
-    //【随机位置建造】 参数是需要建造的单位类型
-    public void Generate(ElementType type)
-    {
-        //若场上仍然存在空方快
-        if (EmptyTiles.Count > 0)
-        {
-            //随机一个位置
-            int PosIndex = Random.Range(0, EmptyTiles.Count);
-
-            //如果这个位置已经有东西了 则不进行建造
-            if (EmptyTiles[PosIndex].TileType != ElementType.Empty)
-            {
-                EmptyTiles.RemoveAt(PosIndex);  //删除这个位置
-                Generate(type);                 //重新触发建造
-            }
-            else
-            {
-                //如果这是敌人或建材单位 赋予其等级
-                if (type == ElementType.Enemy || type == ElementType.Material)
-                {
-                    EmptyTiles[PosIndex].TileLevel = 2;
-                }
-                //其他情况清空等级
-                else
-                {
-                    EmptyTiles[PosIndex].TileLevel = 0;
-                }
-
-                //将指定位置处的方块标记为 指定元素
-                EmptyTiles[PosIndex].TileType = type;
-
-                //从空方快列表中删除该位置
-                EmptyTiles.RemoveAt(PosIndex);
-            }
-        }
-    }
-
-    //【指定位置建造】 参数是需要建造的单位【类型】和【坐标】
-    public bool Generate(ElementType type, int y, int x)
-    {
-        //若当前坐标为空
-        if (AllTiles[x, y].TileType == ElementType.Empty)
-        {
-            //如果出现的是敌人或建材单位 赋予其等级
-            if (type == ElementType.Enemy || type == ElementType.Material)
-            {
-                AllTiles[x, y].TileLevel = 2;
-            }
-            else
-            {
-                AllTiles[x, y].TileLevel = 0;
-            }
-
-            //将指定位置处的方块标记为 指定元素
-            AllTiles[x, y].TileType = type;
-
-            //从空方快列表中随便删一个位置
-            //EmptyTiles.RemoveAt(Random.Range(0, EmptyTiles.Count));
-
-            return true;
-        }
-        return false;
-    }
-    #endregion
-
-    //获取到输入后的【回合行为】
+    //获取到输入后行为
     public void Move(MoveDirection md)
     {
         //if (over)   //若游戏已经结束 不执行回合的行为
@@ -207,42 +144,61 @@ public class GameManager : MonoBehaviour
             ResetMergedFlags();     //清空所有方块上的开关
 
             #region 触发【4.移动】【5.合并】【6.消耗】方法
+            //控制随机步数的移动
+            int ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
+            int ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
+            //不需要随机时 启用被注释代码
+            //int ranOfRow = rows.Count;
+            //int ranOfCol = colums.Count;
             switch (md)
             {
                 case MoveDirection.Down:    //下
                     for (int i = 0; i < colums.Count; i++)
                     {
-                        while (MakeOneMoveDownIndex(colums[i]))   //i为行/列号 逐行传递给移动函数
+                        while (MakeOneMoveDownIndex(colums[i]) && ranOfRow > 0)
                         {
+                            //i为行/列号 逐行传递给移动函数 在函数内逐个移动物体
                             moveMade = true;
+                            ranOfRow--;
                         }
+                        //ranOfRow = rows.Count;
+                        ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
                     }
                     break;
                 case MoveDirection.Left:    //左
                     for (int i = 0; i < rows.Count; i++)
                     {
-                        while (MakeOneMoveDownIndex(rows[i]))
+                        while (MakeOneMoveDownIndex(rows[i]) && ranOfCol > 0)
                         {
                             moveMade = true;
+                            ranOfCol--;
                         }
+                        //ranOfCol = colums.Count;
+                        ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
                     }
                     break;
                 case MoveDirection.Right:   //右
                     for (int i = 0; i < rows.Count; i++)
                     {
-                        while (MakeOneMoveUpIndex(rows[i]))
+                        while (MakeOneMoveUpIndex(rows[i]) && ranOfCol > 0)
                         {
                             moveMade = true;
+                            ranOfCol--;
                         }
+                        //ranOfCol = colums.Count;
+                        ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
                     }
                     break;
                 case MoveDirection.Up:     //上
                     for (int i = 0; i < colums.Count; i++)
                     {
-                        while (MakeOneMoveUpIndex(colums[i]))
+                        while (MakeOneMoveUpIndex(colums[i]) && ranOfRow > 0)
                         {
                             moveMade = true;
+                            ranOfRow--;
                         }
+                        //ranOfRow = rows.Count;
+                        ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
                     }
                     break;
             }
@@ -255,30 +211,33 @@ public class GameManager : MonoBehaviour
                 UpdateEmptyTiles();     //触发建筑行为 并且更新空方快列表 防止已有方块被覆盖
 
                 #region 8.产生新的建材与敌人
-                Generate(ElementType.Material);     //回合结束后 新建一个建材
+                fm.Generate(ElementType.Material);     //回合结束后 新建一个建材
 
                 if ((turn % 15 == 0))
                 {
-                    Generate(ElementType.AssistedEnemy);    //每15个回合出现一个支援兵
+                    //限定支援兵出现的位置
+                    int Xaxis = Random.Range(BORDER, rows.Count - BORDER);
+                    int Yaxit = Random.Range(BORDER, colums.Count - BORDER);
+                    fm.Generate(ElementType.AssistedEnemy, Yaxit, Xaxis);    //每15个回合出现一个支援兵
 
                     if (turn > 30)
                     {
-                        Generate(ElementType.BuilderEnemy); //30回合后出现造墙兵
+                        fm.Generate(ElementType.BuilderEnemy); //30回合后出现造墙兵
                     }
                 }
                 else if (turn % 5 == 0)
                 {
-                    Generate(ElementType.Enemy);    //每五回合产生一个敌人
+                    fm.Generate(ElementType.Enemy);    //每五回合产生一个敌人
 
                     if (turn > 50)
                     {
-                        Generate(ElementType.TowerEnemy);   //50回合后开始出现远程兵
+                        fm.Generate(ElementType.TowerEnemy);   //50回合后开始出现远程兵
                     }
                 }
 
                 if (turn % 10 == 0)
                 {
-                    Generate(ElementType.Wall);     //每十回合产生一个墙
+                    fm.Generate(ElementType.Wall);     //每十回合产生一个墙
                 }
                 #endregion
 
@@ -289,18 +248,8 @@ public class GameManager : MonoBehaviour
                     PanelManager.Instance.YouWon();
                 }
 
-                //如果电力不足
-                if (Power.Instance.Numerical <= 0)
-                {
-                    //GameOver("电力不足");    //显示游戏结束消息
-                    PanelManager.Instance.GameOver("<size=20> 電力が足りない </size>\n", " 建材が４つ揃ったら、すぐに発電所を建てましょう");
-                }
-                //或是没有可移动的方块
-                //else if (!CanMove())
-                //{
-                //    //GameOver("没有可移动的方块");
-                //    PanelManager.Instance.GameOver("移動できるコマがない");
-                //}
+                //判断是否失败
+                GameLose();
                 #endregion
 
                 /// 0.回合结束
@@ -308,11 +257,13 @@ public class GameManager : MonoBehaviour
                 move = false;       //本回合主角还未发生移动
                 RefugeTurn = false; //本回合没有进入避难所
                 BuffTurn = false;   //本回合还未添加减速buff
+
+
             }
         }
     }
 
-    //【移动】与【合并】方块 参数是【指定行号的行/列】
+    //【移动】与【合并】方块 参数是指定行号的行/列
     bool MakeOneMoveDownIndex(Tile[] LineOfTiles)   //下 左
     {
         //在逐行获得行/列后，逐个判断方块，进行移动与合并
@@ -334,9 +285,19 @@ public class GameManager : MonoBehaviour
                 LineOfTiles[i].moveThisTurn = true;     //本格发生过移动
             }
 
+            //如果是主角 就限定他的移动范围
+            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType == ElementType.Player &&
+                LineOfTiles[i + 1].mergedThisTurn == false && i >= BORDER)
+            {
+                LineOfTiles[i].TileType = LineOfTiles[i + 1].TileType;
+                LineOfTiles[i + 1].TileType = ElementType.Empty;
+                LineOfTiles[i].moveThisTurn = true;
+                return true;
+            }
+
             //若方块【自身为空】，且后方有一个【非空】&【非建筑】&【没有发生过碰撞】的方块
             else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i + 1].TileType != ElementType.Empty &&
-                LineOfTiles[i + 1].TileType < ElementType.Tower && LineOfTiles[i + 1].mergedThisTurn == false)
+                LineOfTiles[i + 1].TileType < ElementType.Tower && LineOfTiles[i + 1].mergedThisTurn == false && LineOfTiles[i + 1].TileType > ElementType.Player)
             {
                 //通用的移动代码
                 LineOfTiles[i].TileLevel = LineOfTiles[i + 1].TileLevel;    //将后方方块的等级转移到自己身上
@@ -399,7 +360,10 @@ public class GameManager : MonoBehaviour
                             LineOfTiles[i + 1].mergedThisTurn == false /*&& LineOfTiles[i + 1].moveThisTurn == true*/)
                         {
                             //GameOver("玩家受到攻击"); //游戏失败
-                            PanelManager.Instance.GameOver("<size=20> プレーヤーが攻撃された </size>\n", " 移動の際、主人公の後ろに敵がいるのかとうかを確かめたほうがいいよ");
+                            //PanelManager.Instance.GameOver("<size=20> プレーヤーが攻撃された </size>\n", " 移動の際、主人公の後ろに敵がいるのかとうかを確かめたほうがいいよ");
+
+                            //遭到敌人攻击时HP-1
+                            HitPoint.Instance.Numerical--;
                             return false; ;
                         }
                         //不与其他单位发生事件
@@ -409,10 +373,10 @@ public class GameManager : MonoBehaviour
                     #region 建材
                     case ElementType.Material:
                         //同等级同类 且自身与后方【本回合都未发生过合并】 合并升级
-                        if (LineOfTiles[i + 1].TileType == ElementType.Material && LineOfTiles[i].TileLevel == LineOfTiles[i + 1].TileLevel &&
+                        if (LineOfTiles[i + 1].TileType == ElementType.Material && /*LineOfTiles[i].TileLevel == LineOfTiles[i + 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i + 1].mergedThisTurn == false)
                         {
-                            LineOfTiles[i].TileLevel *= 2;      //等级翻倍
+                            LineOfTiles[i].TileLevel += LineOfTiles[i + 1].TileLevel;      //增加等级
                             LineOfTiles[i].UpdateTile();        //更新方块内容
                             LineOfTiles[i + 1].TileLevel = 0;   //清空前一个方块的等级
                             LineOfTiles[i + 1].TileType = ElementType.Empty;    //清空前一个方块的样式
@@ -451,10 +415,10 @@ public class GameManager : MonoBehaviour
                     #region 敌人
                     case ElementType.Enemy:
                         //同等级同类 合并升级 且自身与后方【本回合都未发生过合并】
-                        if (LineOfTiles[i + 1].TileType == ElementType.Enemy && LineOfTiles[i].TileLevel == LineOfTiles[i + 1].TileLevel &&
+                        if (LineOfTiles[i + 1].TileType == ElementType.Enemy && /*LineOfTiles[i].TileLevel == LineOfTiles[i + 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i + 1].mergedThisTurn == false)
                         {
-                            LineOfTiles[i].TileLevel *= 2;      //等级翻倍
+                            LineOfTiles[i].TileLevel += LineOfTiles[i + 1].TileLevel;
                             LineOfTiles[i].UpdateTile();        //更新样式
                             LineOfTiles[i + 1].TileLevel = 0;   //清空上一个方块的等级
                             LineOfTiles[i + 1].TileType = ElementType.Empty;    //清空上一个方块的样式
@@ -522,9 +486,13 @@ public class GameManager : MonoBehaviour
                             //如果炸到主角 游戏结束
                             if (LineOfTiles[i + 1].TileType == ElementType.Player)
                             {
-                                PanelManager.Instance.GameOver("<size=20> プレーヤーが爆発された</size> \n", " 自分が埋めた地雷に踏まないように");
+                                //PanelManager.Instance.GameOver("<size=20> プレーヤーが爆発された</size> \n", " 自分が埋めた地雷に踏まないように");
+
+                                //玩家生命-1 地雷被消耗
+                                HitPoint.Instance.Numerical--;
+                                LineOfTiles[i].TileType = LineOfTiles[i + 1].TileType;
                             }
-                            //8级以下的任何物体都直接秒杀 自身不小毁(什么都能炸
+                            //8级以下的任何物体都直接秒杀 自身不销毁(什么都能炸
                             else if (LineOfTiles[i + 1].TileLevel <= 8)
                             {
                                 LineOfTiles[i + 1].TileLevel = 0;               //清空对方的等级
@@ -681,9 +649,19 @@ public class GameManager : MonoBehaviour
                 LineOfTiles[i].moveThisTurn = true;     //本格发生过移动
             }
 
+            //主角的移动
+            else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType == ElementType.Player &&
+                LineOfTiles[i - 1].mergedThisTurn == false && i < LineOfTiles.Length - BORDER)
+            {
+                LineOfTiles[i].TileType = LineOfTiles[i - 1].TileType;
+                LineOfTiles[i - 1].TileType = ElementType.Empty;
+                LineOfTiles[i].moveThisTurn = true;
+                return true;
+            }
+
             //正常移动
             else if (LineOfTiles[i].TileType == ElementType.Empty && LineOfTiles[i - 1].TileType != ElementType.Empty &&
-                LineOfTiles[i - 1].TileType < ElementType.Tower && LineOfTiles[i - 1].mergedThisTurn == false)
+                LineOfTiles[i - 1].TileType < ElementType.Tower && LineOfTiles[i - 1].mergedThisTurn == false && LineOfTiles[i - 1].TileType > ElementType.Player)
             {
                 LineOfTiles[i].TileLevel = LineOfTiles[i - 1].TileLevel;
                 LineOfTiles[i].TileType = LineOfTiles[i - 1].TileType;
@@ -740,7 +718,9 @@ public class GameManager : MonoBehaviour
                             LineOfTiles[i - 1].mergedThisTurn == false /*&& LineOfTiles[i - 1].moveThisTurn == true*/)
                         {
                             //GameOver("玩家受到攻击");
-                            PanelManager.Instance.GameOver("<size=20> プレーヤーが攻撃された </size>\n", " 移動の際、主人公の後ろに敵がいるのかとうかを確かめたほうがいいよ");
+                            //PanelManager.Instance.GameOver("<size=20> プレーヤーが攻撃された </size>\n", " 移動の際、主人公の後ろに敵がいるのかとうかを確かめたほうがいいよ");
+
+                            HitPoint.Instance.Numerical--;
                             return false; ;
                         }
                         break;
@@ -749,10 +729,10 @@ public class GameManager : MonoBehaviour
                     #region 建材
                     case ElementType.Material:
                         //同等级同类 合并升级
-                        if (LineOfTiles[i - 1].TileType == ElementType.Material && LineOfTiles[i].TileLevel == LineOfTiles[i - 1].TileLevel &&
+                        if (LineOfTiles[i - 1].TileType == ElementType.Material && /*LineOfTiles[i].TileLevel == LineOfTiles[i - 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i - 1].mergedThisTurn == false)
                         {
-                            LineOfTiles[i].TileLevel *= 2;
+                            LineOfTiles[i].TileLevel += LineOfTiles[i - 1].TileLevel;
                             LineOfTiles[i].UpdateTile();
                             LineOfTiles[i - 1].TileLevel = 0;
                             LineOfTiles[i - 1].TileType = ElementType.Empty;
@@ -787,10 +767,10 @@ public class GameManager : MonoBehaviour
                     #region 敌人
                     case ElementType.Enemy:
                         //同等级同类 合并升级
-                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy && LineOfTiles[i].TileLevel == LineOfTiles[i - 1].TileLevel &&
+                        if (LineOfTiles[i - 1].TileType == ElementType.Enemy && /*LineOfTiles[i].TileLevel == LineOfTiles[i - 1].TileLevel &&*/
                             LineOfTiles[i].mergedThisTurn == false && LineOfTiles[i - 1].mergedThisTurn == false)
                         {
-                            LineOfTiles[i].TileLevel *= 2;
+                            LineOfTiles[i].TileLevel += LineOfTiles[i - 1].TileLevel;
                             LineOfTiles[i].UpdateTile();
                             LineOfTiles[i - 1].TileLevel = 0;
                             LineOfTiles[i - 1].TileType = ElementType.Empty;
@@ -852,7 +832,10 @@ public class GameManager : MonoBehaviour
                             //如果炸到主角 游戏结束
                             if (LineOfTiles[i - 1].TileType == ElementType.Player)
                             {
-                                PanelManager.Instance.GameOver("<size=20> プレーヤーが爆発された </size>\n", " 自分が埋めた地雷に踏まないように");
+                                //PanelManager.Instance.GameOver("<size=20> プレーヤーが爆発された </size>\n", " 自分が埋めた地雷に踏まないように");
+
+                                HitPoint.Instance.Numerical--;
+                                LineOfTiles[i].TileType = LineOfTiles[i - 1].TileType;
                             }
                             //8级以下单位直接炸死 自身不销毁
                             else if (LineOfTiles[i - 1].TileLevel <= 8)
@@ -965,47 +948,6 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-    //管理合并开关（回合结束后
-    private void ResetMergedFlags()
-    {
-        //遍历所有的方块
-        foreach (Tile t in AllTiles)
-        {
-            t.mergedThisTurn = false;   //将他们标记为可合并，用于下回合的行动
-            t.moveThisTurn = false;           //将所有的方块标记为未移动
-        }
-    }
-
-    //计算指定类型的【建筑数量】
-    public int CountOff(ElementType type)
-    {
-        int num = 0;
-        foreach (Tile t in AllTiles)
-        {
-            if (t.TileType == type)
-            {
-                num++;
-            }
-
-            //顺便遍历所有按钮 如果有处于禁用状态的按钮 将其恢复
-            t.GetComponent<Button>().interactable = true;
-        }
-        return num;
-    }
-
-    //敌方支援
-    private void Assisted()
-    {
-        foreach (Tile t in AllTiles)
-        {
-            if (t.TileType == ElementType.Enemy)
-            {
-                t.TileLevel *= 2;
-                t.UpdateTile();
-            }
-        }
-    }
-
     //更新空方块列表与【建筑行为】
     private void UpdateEmptyTiles()
     {
@@ -1030,10 +972,20 @@ public class GameManager : MonoBehaviour
                         Power.Instance.Numerical += 10; //获得电力 （根据建筑等级？
                     }
                     break;
+
                 case ElementType.Mall:
                     if (move)
                     {
                         Money.Instance.Numerical += 5; //获得金钱 （根据建筑等级？
+                    }
+                    break;
+
+                //玩家发生过移动 && 血量低于上限 && 回合数能够被5整除
+                case ElementType.Hospital:
+                    if (move && HitPoint.Instance.Numerical < HPtopLimit && turn % 5 == 0)
+                    {
+                        Money.Instance.Numerical -= 10;     //消耗金钱
+                        HitPoint.Instance.Numerical += 1;
                     }
                     break;
                 #endregion
@@ -1041,17 +993,17 @@ public class GameManager : MonoBehaviour
                 #region 我方建筑行为
                 //攻击塔
                 case ElementType.Tower:
-                    if (TowerAttack(t.indCol, t.indRow, ElementType.Enemy)) ;               //近战型敌人
+                    if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Enemy)) ;               //近战型敌人
 
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.TowerEnemy))       //远程型敌人
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.TowerEnemy))       //远程型敌人
                     {
                         Power.Instance.Numerical -= 8;
                     }
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.BuilderEnemy))     //造墙型敌人
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.BuilderEnemy))     //造墙型敌人
                     {
                         Power.Instance.Numerical -= 16;
                     }
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.AssistedEnemy))    //支援型敌人
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.AssistedEnemy))    //支援型敌人
                     {
                         Power.Instance.Numerical -= 32;
                     }
@@ -1059,7 +1011,7 @@ public class GameManager : MonoBehaviour
 
                 //干扰磁场
                 case ElementType.Magnetic:
-                    MagneticEvent(t.indCol, t.indRow);  //反推可移动单位
+                    fm.MagneticEvent(t.indCol, t.indRow);  //反推可移动单位
                     t.TileType = ElementType.Empty;     //销毁自身
                     break;
                 #endregion
@@ -1067,208 +1019,47 @@ public class GameManager : MonoBehaviour
                 #region 敌方行为
                 //敌方远程兵
                 case ElementType.TowerEnemy:
-                    if (TowerAttack(t.indCol, t.indRow, ElementType.Player))            //主角
+                    if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Player))            //主角
                     {
-                        PanelManager.Instance.GameOver("<size=20> プレーヤーが遠隔に攻撃された </size>\n", " 遠隔型敵に遠避けるほうがいいよ");
+                        //PanelManager.Instance.GameOver("<size=20> プレーヤーが遠隔に攻撃された </size>\n", " 遠隔型敵に遠避けるほうがいいよ");
+                        HitPoint.Instance.Numerical--;
                     }
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.Access))        //避难所内部
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Access))        //避难所内部
                     {
-                        PanelManager.Instance.GameOver("<size=20> プレーヤーが遠隔に攻撃された </size>\n", " 避難所の内部も遠隔型敵に攻撃されるよ");
+                        //PanelManager.Instance.GameOver("<size=20> プレーヤーが遠隔に攻撃された </size>\n", " 避難所の内部も遠隔型敵に攻撃されるよ");
+                        HitPoint.Instance.Numerical--;
                     }
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.Refuge)) ;     //避难所
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.Power)) ;      //发电站
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.Mall)) ;       //商场
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.Tower)) ;      //攻击塔
-                    else if (TowerAttack(t.indCol, t.indRow, ElementType.Material)) ;   //建材
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Refuge)) ;     //避难所
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Hospital)) ;   //医院
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Power)) ;      //发电站
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Mall)) ;       //商场
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Tower)) ;      //攻击塔
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Material)) ;   //建材
                     break;
 
                 case ElementType.AssistedEnemy:
                     //支援型敌人 使全场的敌人等级翻倍
-                    Assisted();
+                    fm.Assisted();
                     break;
                     #endregion
             }
         }
     }
 
-    //【远程攻击】 参数是塔的x,y坐标，和要攻击的单位类型
-    private bool TowerAttack(int x, int y, ElementType type)
+    //管理合并开关（回合结束后
+    private void ResetMergedFlags()
     {
-        bool attack = false;    //【T】本回合已进行过攻击 【F】未进行过攻击
-
-        //横向 先左后右 (x-3,y) -> (x+3,y)
-        for (int j = x - 3; j <= x + 3; j++)
+        //遍历所有的方块
+        foreach (Tile t in AllTiles)
         {
-            #region 攻击前的判断
-            if (attack)
-            {
-                Debug.Log("已进行过攻击");
-                break;
-            }
-            if (j < 0 || j > 7)
-            {
-                continue;
-            }
-            #endregion
-
-            #region 发动攻击
-            if (AllTiles[y, j].TileType == type)
-            {
-                int consume = AllTiles[y, j].TileLevel * 2;
-                int surplus = Power.Instance.Numerical - consume;
-                if (surplus > 20)
-                {
-                    AllTiles[y, j].TileLevel = 0;
-                    AllTiles[y, j].TileType = ElementType.Empty;
-
-                    attack = true;
-
-                    Power.Instance.Numerical = surplus;
-                    //string str = "攻击消耗" + consume;
-                    //Debug.Log(str);
-
-                    return true;
-                }
-            }
-            #endregion
-        }
-
-        //纵向 先下后上 (x,y-3) -> (x,y+3)
-        for (int i = y - 3; i <= y + 3; i++)
-        {
-            #region 攻击前的判断
-            //每回合只攻击一个单位
-            if (attack)
-            {
-                Debug.Log("已进行过攻击");
-                break;
-            }
-            //防止数组下标越界
-            if (i < 0 || i > 10)
-            {
-                continue;
-            }
-            #endregion
-
-            #region 发动攻击
-            //定位到攻击范围内的格子 判断其是否为攻击目标
-            if (AllTiles[i, x].TileType == type)
-            {
-                int consume = AllTiles[i, x].TileLevel * 2;         //攻击消耗
-                int surplus = Power.Instance.Numerical - consume;   //攻击后剩余电力
-
-                //判断是否有足够的资源进行攻击
-                if (surplus > 20)
-                {
-                    //清空敌人的等级和样式
-                    AllTiles[i, x].TileLevel = 0;
-                    AllTiles[i, x].TileType = ElementType.Empty;
-
-                    //关闭攻击开关
-                    attack = true;
-
-                    //消耗相应资源
-                    Power.Instance.Numerical = surplus;
-                    //string str = "攻击消耗" + consume;
-                    //Debug.Log(str);
-
-                    return true;
-                }
-            }
-            #endregion
-        }
-
-        return false;
-    }
-
-    //磁场事件 目前定义在回合结束时触发
-    public void MagneticEvent(int x, int y)
-    {
-        //左 x = -3 -2 -1
-        for (int i = x - 3; i < x; i++)
-        {
-            //防止数组下标越界
-            if (i - 1 < 0)
-            {
-                continue;
-            }
-
-            //如果是个可移动的单位 且其身后为空或是可移动单位
-            if (AllTiles[y, i].TileType < ElementType.Tower && AllTiles[y, i].TileType != ElementType.Empty
-                && AllTiles[y, i - 1].TileType == ElementType.Empty)
-            {
-                //传值给后一个格子
-                AllTiles[y, i - 1].TileLevel = AllTiles[y, i].TileLevel;
-                AllTiles[y, i - 1].TileType = AllTiles[y, i].TileType;
-
-                //清空自身
-                AllTiles[y, i].TileLevel = 0;
-                AllTiles[y, i].TileType = ElementType.Empty;
-            }
-        }
-
-        //右 x = 3 2 1
-        for (int i = x + 3; i > x; i--)
-        {
-            if (i + 1 > 7)
-            {
-                continue;
-            }
-
-            if (AllTiles[y, i].TileType < ElementType.Tower && AllTiles[y, i].TileType != ElementType.Empty
-                && AllTiles[y, i + 1].TileType == ElementType.Empty)
-            {
-                AllTiles[y, i + 1].TileLevel = AllTiles[y, i].TileLevel;
-                AllTiles[y, i + 1].TileType = AllTiles[y, i].TileType;
-
-                AllTiles[y, i].TileLevel = 0;
-                AllTiles[y, i].TileType = ElementType.Empty;
-            }
-        }
-
-        //上 y = 3 2 1
-        for (int i = y + 3; i > y; i--)
-        {
-            //防止数组下标越界
-            if (i + 1 > 10)
-            {
-                continue;
-            }
-
-            if (AllTiles[i, x].TileType < ElementType.Tower && AllTiles[i, x].TileType != ElementType.Empty
-                && AllTiles[i + 1, x].TileType == ElementType.Empty)
-            {
-                AllTiles[i + 1, x].TileLevel = AllTiles[i, x].TileLevel;
-                AllTiles[i + 1, x].TileType = AllTiles[i, x].TileType;
-
-                AllTiles[i, x].TileLevel = 0;
-                AllTiles[i, x].TileType = ElementType.Empty;
-            }
-        }
-
-        //下y = -3 -2 -1
-        for (int i = y - 3; i < y; i++)
-        {
-            if (i - 1 < 0)
-            {
-                continue;
-            }
-
-            if (AllTiles[i, x].TileType < ElementType.Tower && AllTiles[i, x].TileType != ElementType.Empty
-                && AllTiles[i - 1, x].TileType == ElementType.Empty)
-            {
-                AllTiles[i - 1, x].TileLevel = AllTiles[i, x].TileLevel;
-                AllTiles[i - 1, x].TileType = AllTiles[i, x].TileType;
-
-                AllTiles[i, x].TileLevel = 0;
-                AllTiles[i, x].TileType = ElementType.Empty;
-            }
+            t.mergedThisTurn = false;   //将他们标记为可合并，用于下回合的行动
+            t.moveThisTurn = false;     //将所有的方块标记为未移动
         }
     }
 
     #region 游戏胜负的判定
     //胜利 检查场上是否还存在敌人
-    bool NotEnemy()
+    private bool NotEnemy()
     {
         foreach (Tile t in AllTiles)
         {
@@ -1282,37 +1073,29 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    //失败 检查是否还有可移动的方块【已弃用】
-    bool CanMove()
+    //各种失败条件
+    private void GameLose()
     {
-        //无视剩余空方快大于零的情况
-        if (EmptyTiles.Count > 0)
-            return true;
-        //无视方块周围还有相同数字方块的情况
-        else
+        //电力不足
+        if (Power.Instance.Numerical <= 0)
         {
-            //check columns
-            //for (int i = 0; i < colums.Count; i++)
-            //    for (int j = 0; j < rows.Count - 1; j++)
-            //        if (AllTiles[j, i].Number == AllTiles[j + 1, i].Number)
-            //            return true;
-
-            ////check rows
-            //for (int i = 0; i < rows.Count; i++)
-            //    for (int j = 0; j < colums.Count - 1; j++)
-            //        if (AllTiles[i, j].Number == AllTiles[i, j + 1].Number)
-            //            return true;
+            //显示游戏结束消息
+            PanelManager.Instance.GameOver("<size=20> 電力が足りない </size>\n", " 建材が４つ揃ったら、すぐに発電所を建てましょう");
         }
 
-        //既没有空方快，也没有可以合并的方块时，游戏失败
-        return false;
+        //主角被击杀
+        if (HitPoint.Instance.Numerical <= 0)
+        {
+            PanelManager.Instance.GameOver("<size=20> プレーヤーが攻撃された </size>\n", " 移動の際、主人公の後ろに敵がいるのかとうかを確かめたほうがいいよ");
+        }
+
     }
     #endregion
 
     //debug用
     void Update()
     {
-        //结束游戏
+        #region 结束游戏
         if (Input.GetKeyDown(KeyCode.Q))
         {
             PanelManager.Instance.YouWon();
@@ -1321,7 +1104,9 @@ public class GameManager : MonoBehaviour
         {
             PanelManager.Instance.GameOver("手动结束", "");
         }
+        #endregion
 
+        #region 清空单位
         //清空所有可移动的单位
         else if (Input.GetKeyDown(KeyCode.Z))
         {
@@ -1344,13 +1129,23 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+        #endregion
 
+        #region 新建单位
         //制造一个敌人
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            Generate(ElementType.BuilderEnemy);
+            fm.Generate(ElementType.TowerEnemy);
 
         }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            int Xaxis = Random.Range(BORDER, rows.Count - BORDER);
+            int Yaxit = Random.Range(BORDER, colums.Count - BORDER);
+            fm.Generate(ElementType.AssistedEnemy, Yaxit, Xaxis);
+            Debug.Log("x；" + Yaxit + " ,y:" + Xaxis);
+        }
+        #endregion
 
         //获得大量资源
         else if (Input.GetKeyDown(KeyCode.L))
@@ -1361,4 +1156,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    //获取到function
+    void Awake()
+    {
+        fm = FindObjectOfType<FunctionManager>();
+    }
 }

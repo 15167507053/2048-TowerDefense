@@ -29,10 +29,14 @@ public class Tile : MonoBehaviour
     private Image TileImage;        //子Image的样式
 
     private Text TileText;      //方块的数字
+    [HideInInspector]
     public int TileLevel = 0;   //方块的等级
 
+    [HideInInspector]
     public bool moveThisTurn = false;       //记录方块是否发生过移动
+    [HideInInspector]
     public bool mergedThisTurn = false;     //判断本回合是否已经进行过合并
+    [HideInInspector]
     public bool SlowBuff = false;           //是否被减速
 
     //在游戏管理器中存储关于所有图块的信息 该对象的坐标
@@ -133,8 +137,11 @@ public class Tile : MonoBehaviour
             case ElementType.AssistedEnemy: //支援型敌人
                 ApplyStyleFromHolder(13);
                 break;
-            case ElementType.Access:
+            case ElementType.Access:        //主角进入避难所
                 ApplyStyleFromHolder(14);
+                break;
+            case ElementType.Hospital:
+                ApplyStyleFromHolder(15);
                 break;
 
             default:

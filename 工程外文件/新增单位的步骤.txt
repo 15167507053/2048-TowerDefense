@@ -1,6 +1,6 @@
 1. 在【GameManager】的 ElementType 枚举中声明新单位的名称（注意区分该单位可否移动）
 
-2. 在Unity的Canvas-> TileStyleHolder 中增长列表长度 定义并添加新单位的贴图
+2. 在Unity的Canvas-> TileStyleHolder 中增长列表长度 定义并添加新单位的贴图（注意其他单位的贴图是否因为新数据的插入而发生错位）
 
 3. 在【Tile】脚本的 ApplyStyle 函数中绑定类型与贴图
 
@@ -16,9 +16,13 @@
 	如果是建筑单位
 5.1. 在【EventManager】脚本的MessageBoxOn方法中添加该单位的建造按钮
 
-5.2. 在【EventManager】脚本中添加一个函数 用于定义该单位的造价 并在unity中绑定至按钮事件
+5.2 在【EventManager】的Price方法中定义该建筑的造价
 
-5.3. 在Unity的Canvas-> GamePanel -> Contruction 中添加该单位的建造按钮 并绑定建造函数
+5.3. 在【EventManager】脚本的【各个建筑按钮】代码区块中添加一个函数 用于定义该单位的造价 并在unity中绑定至按钮事件
+
+5.4. 在Unity的Canvas-> GamePanel -> EventUI-> Contruction 中添加该单位的建造按钮 并绑定建造函数
+
+5.5 如果是一个可被破坏的单位 将其加入到远程兵的攻击目标内（【GameManager】-UpdateEmptyTiles
 
 5.9. 当想要删除一个建筑单位时 只需删除他的建造按钮 使其无法被被调用即可
 

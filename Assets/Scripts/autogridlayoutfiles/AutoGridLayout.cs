@@ -15,7 +15,7 @@ public class AutoGridLayout : GridLayoutGroup
     //计算水平/垂直布局输入
     public override void CalculateLayoutInputHorizontal()
     {
-        //调用基类上已被其他方法重写的方法
+        //调用父类的同名方法
         base.CalculateLayoutInputHorizontal();      //如果没有这一行 那么只会生成一个方块
 
         float iColumn = -1; //列数
