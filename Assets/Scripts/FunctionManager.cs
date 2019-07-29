@@ -123,9 +123,12 @@ public class FunctionManager : MonoBehaviour
                 int surplus = Power.Instance.Numerical - consume;
                 if (surplus > 20)
                 {
-                    gm.AllTiles[y, j].TileLevel = 0;
-                    gm.AllTiles[y, j].TileType = ElementType.Empty;
-                    gm.AllTiles[y, j].SlowBuff = false;
+                    if (type != ElementType.Player && type != ElementType.Access)
+                    {
+                        gm.AllTiles[y, j].TileLevel = 0;
+                        gm.AllTiles[y, j].TileType = ElementType.Empty;
+                        gm.AllTiles[y, j].SlowBuff = false;
+                    }
 
                     attack = true;
 
@@ -163,14 +166,17 @@ public class FunctionManager : MonoBehaviour
                 int consume = gm.AllTiles[i, x].TileLevel * 2;         //攻击消耗
                 int surplus = Power.Instance.Numerical - consume;   //攻击后剩余电力
 
-                //判断是否有足够的资源进行攻击
+                //判断是否有足够的资源进行攻击 且不销毁主角
                 if (surplus > 20)
                 {
-                    //清空敌人的等级和样式
-                    gm.AllTiles[i, x].TileLevel = 0;
-                    gm.AllTiles[i, x].TileType = ElementType.Empty;
-                    //解除减速buff
-                    gm.AllTiles[i, x].SlowBuff = false;
+                    if (type != ElementType.Player && type != ElementType.Access)
+                    {
+                        //清空目标的等级和样式
+                        gm.AllTiles[i, x].TileLevel = 0;
+                        gm.AllTiles[i, x].TileType = ElementType.Empty;
+                        //解除减速buff
+                        gm.AllTiles[i, x].SlowBuff = false;
+                    }
 
                     //关闭攻击开关
                     attack = true;

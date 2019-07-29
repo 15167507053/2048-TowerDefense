@@ -1030,6 +1030,7 @@ public class GameManager : MonoBehaviour
                         HitPoint.Instance.Numerical--;
                     }
                     else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Refuge)) ;     //避难所
+                    else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Hospital)) ;   //医院
                     else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Power)) ;      //发电站
                     else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Mall)) ;       //商场
                     else if (fm.TowerAttack(t.indCol, t.indRow, ElementType.Tower)) ;      //攻击塔
@@ -1134,7 +1135,7 @@ public class GameManager : MonoBehaviour
         //制造一个敌人
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            fm.Generate(ElementType.Enemy);
+            fm.Generate(ElementType.TowerEnemy);
 
         }
         else if (Input.GetKeyDown(KeyCode.S))

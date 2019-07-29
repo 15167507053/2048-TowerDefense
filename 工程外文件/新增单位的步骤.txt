@@ -22,5 +22,7 @@
 
 5.4. 在Unity的Canvas-> GamePanel -> EventUI-> Contruction 中添加该单位的建造按钮 并绑定建造函数
 
+5.5 如果是一个可被破坏的单位 将其加入到远程兵的攻击目标内（【GameManager】-UpdateEmptyTiles
+
 5.9. 当想要删除一个建筑单位时 只需删除他的建造按钮 使其无法被被调用即可
 
