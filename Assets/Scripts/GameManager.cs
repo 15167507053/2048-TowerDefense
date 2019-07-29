@@ -169,7 +169,7 @@ public class GameManager : MonoBehaviour
                             moveMade = true;
                             ranOfRow--;
                         }
-                        //ranOfRow = rows.Count;
+                        ranOfRow = rows.Count;  //不需要随机步数移动就注释下句代码
                         ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
                     }
                     break;
@@ -181,7 +181,7 @@ public class GameManager : MonoBehaviour
                             moveMade = true;
                             ranOfCol--;
                         }
-                        //ranOfCol = colums.Count;
+                        ranOfCol = colums.Count;
                         ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
                     }
                     break;
@@ -193,7 +193,7 @@ public class GameManager : MonoBehaviour
                             moveMade = true;
                             ranOfCol--;
                         }
-                        //ranOfCol = colums.Count;
+                        ranOfCol = colums.Count;
                         ranOfCol = Random.Range(colums.Count - BORDER * 2, colums.Count);
                     }
                     break;
@@ -205,7 +205,7 @@ public class GameManager : MonoBehaviour
                             moveMade = true;
                             ranOfRow--;
                         }
-                        //ranOfRow = rows.Count;
+                        ranOfRow = rows.Count;
                         ranOfRow = Random.Range(rows.Count - BORDER * 2, rows.Count);
                     }
                     break;
@@ -977,14 +977,14 @@ public class GameManager : MonoBehaviour
                     //仅在玩家发生过移动时产生资源
                     if (move)
                     {
-                        Power.Instance.Numerical += 10; //获得电力 （根据建筑等级？
+                        Power.Instance.Numerical += 50; //获得电力 （根据建筑等级？
                     }
                     break;
 
                 case ElementType.Mall:
                     if (move)
                     {
-                        Money.Instance.Numerical += 5; //获得金钱 （根据建筑等级？
+                        Money.Instance.Numerical += 50; //获得金钱 （根据建筑等级？
                     }
                     break;
 
