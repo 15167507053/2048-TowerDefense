@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//各种不在主要流程中必然出现的【特殊方法】
 public class FunctionManager : MonoBehaviour
 {
     private GameManager gm;     //用于调用gamemanager脚本的方法  

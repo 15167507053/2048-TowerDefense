@@ -63,7 +63,7 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region 行列与方块列表
-    public Tile[,] AllTiles = new Tile[11, 8];  //获取所有的方块
+    public Tile[,] AllTiles = new Tile[15, 10];  //获取所有的方块
 
     //创建行和列的列表 用于移动
     private List<Tile[]> colums = new List<Tile[]>();
@@ -95,26 +95,34 @@ public class GameManager : MonoBehaviour
         #endregion
 
         #region 初始化 行和列 的列表
-        colums.Add(new Tile[] { AllTiles[0, 0], AllTiles[1, 0], AllTiles[2, 0], AllTiles[3, 0], AllTiles[4, 0], AllTiles[5, 0], AllTiles[6, 0], AllTiles[7, 0], AllTiles[8, 0], AllTiles[9, 0], AllTiles[10, 0] });
-        colums.Add(new Tile[] { AllTiles[0, 1], AllTiles[1, 1], AllTiles[2, 1], AllTiles[3, 1], AllTiles[4, 1], AllTiles[5, 1], AllTiles[6, 1], AllTiles[7, 1], AllTiles[8, 1], AllTiles[9, 1], AllTiles[10, 1] });
-        colums.Add(new Tile[] { AllTiles[0, 2], AllTiles[1, 2], AllTiles[2, 2], AllTiles[3, 2], AllTiles[4, 2], AllTiles[5, 2], AllTiles[6, 2], AllTiles[7, 2], AllTiles[8, 2], AllTiles[9, 2], AllTiles[10, 2] });
-        colums.Add(new Tile[] { AllTiles[0, 3], AllTiles[1, 3], AllTiles[2, 3], AllTiles[3, 3], AllTiles[4, 3], AllTiles[5, 3], AllTiles[6, 3], AllTiles[7, 3], AllTiles[8, 3], AllTiles[9, 3], AllTiles[10, 3] });
-        colums.Add(new Tile[] { AllTiles[0, 4], AllTiles[1, 4], AllTiles[2, 4], AllTiles[3, 4], AllTiles[4, 4], AllTiles[5, 4], AllTiles[6, 4], AllTiles[7, 4], AllTiles[8, 4], AllTiles[9, 4], AllTiles[10, 4] });
-        colums.Add(new Tile[] { AllTiles[0, 5], AllTiles[1, 5], AllTiles[2, 5], AllTiles[3, 5], AllTiles[4, 5], AllTiles[5, 5], AllTiles[6, 5], AllTiles[7, 5], AllTiles[8, 5], AllTiles[9, 5], AllTiles[10, 5] });
-        colums.Add(new Tile[] { AllTiles[0, 6], AllTiles[1, 6], AllTiles[2, 6], AllTiles[3, 6], AllTiles[4, 6], AllTiles[5, 6], AllTiles[6, 6], AllTiles[7, 6], AllTiles[8, 6], AllTiles[9, 6], AllTiles[10, 6] });
-        colums.Add(new Tile[] { AllTiles[0, 7], AllTiles[1, 7], AllTiles[2, 7], AllTiles[3, 7], AllTiles[4, 7], AllTiles[5, 7], AllTiles[6, 7], AllTiles[7, 7], AllTiles[8, 7], AllTiles[9, 7], AllTiles[10, 7] });
+        //10列 * 15个元素
+        colums.Add(new Tile[] { AllTiles[0, 0], AllTiles[1, 0], AllTiles[2, 0], AllTiles[3, 0], AllTiles[4, 0], AllTiles[5, 0], AllTiles[6, 0], AllTiles[7, 0], AllTiles[8, 0], AllTiles[9, 0], AllTiles[10, 0], AllTiles[11, 0], AllTiles[12, 0], AllTiles[13, 0], AllTiles[14, 0] });
+        colums.Add(new Tile[] { AllTiles[0, 1], AllTiles[1, 1], AllTiles[2, 1], AllTiles[3, 1], AllTiles[4, 1], AllTiles[5, 1], AllTiles[6, 1], AllTiles[7, 1], AllTiles[8, 1], AllTiles[9, 1], AllTiles[10, 1], AllTiles[11, 1], AllTiles[12, 1], AllTiles[13, 1], AllTiles[14, 1] });
+        colums.Add(new Tile[] { AllTiles[0, 2], AllTiles[1, 2], AllTiles[2, 2], AllTiles[3, 2], AllTiles[4, 2], AllTiles[5, 2], AllTiles[6, 2], AllTiles[7, 2], AllTiles[8, 2], AllTiles[9, 2], AllTiles[10, 2], AllTiles[11, 2], AllTiles[12, 2], AllTiles[13, 2], AllTiles[14, 2] });
+        colums.Add(new Tile[] { AllTiles[0, 3], AllTiles[1, 3], AllTiles[2, 3], AllTiles[3, 3], AllTiles[4, 3], AllTiles[5, 3], AllTiles[6, 3], AllTiles[7, 3], AllTiles[8, 3], AllTiles[9, 3], AllTiles[10, 3], AllTiles[11, 3], AllTiles[12, 3], AllTiles[13, 3], AllTiles[14, 3] });
+        colums.Add(new Tile[] { AllTiles[0, 4], AllTiles[1, 4], AllTiles[2, 4], AllTiles[3, 4], AllTiles[4, 4], AllTiles[5, 4], AllTiles[6, 4], AllTiles[7, 4], AllTiles[8, 4], AllTiles[9, 4], AllTiles[10, 4], AllTiles[11, 4], AllTiles[12, 4], AllTiles[13, 4], AllTiles[14, 4] });
+        colums.Add(new Tile[] { AllTiles[0, 5], AllTiles[1, 5], AllTiles[2, 5], AllTiles[3, 5], AllTiles[4, 5], AllTiles[5, 5], AllTiles[6, 5], AllTiles[7, 5], AllTiles[8, 5], AllTiles[9, 5], AllTiles[10, 5], AllTiles[11, 5], AllTiles[12, 5], AllTiles[13, 5], AllTiles[14, 5] });
+        colums.Add(new Tile[] { AllTiles[0, 6], AllTiles[1, 6], AllTiles[2, 6], AllTiles[3, 6], AllTiles[4, 6], AllTiles[5, 6], AllTiles[6, 6], AllTiles[7, 6], AllTiles[8, 6], AllTiles[9, 6], AllTiles[10, 6], AllTiles[11, 6], AllTiles[12, 6], AllTiles[13, 6], AllTiles[14, 6] });
+        colums.Add(new Tile[] { AllTiles[0, 7], AllTiles[1, 7], AllTiles[2, 7], AllTiles[3, 7], AllTiles[4, 7], AllTiles[5, 7], AllTiles[6, 7], AllTiles[7, 7], AllTiles[8, 7], AllTiles[9, 7], AllTiles[10, 7], AllTiles[11, 7], AllTiles[12, 7], AllTiles[13, 7], AllTiles[14, 7] });
+        colums.Add(new Tile[] { AllTiles[0, 8], AllTiles[1, 8], AllTiles[2, 8], AllTiles[3, 8], AllTiles[4, 8], AllTiles[5, 8], AllTiles[6, 8], AllTiles[7, 8], AllTiles[8, 8], AllTiles[9, 8], AllTiles[10, 8], AllTiles[11, 8], AllTiles[12, 8], AllTiles[13, 8], AllTiles[14, 8] });
+        colums.Add(new Tile[] { AllTiles[0, 9], AllTiles[1, 9], AllTiles[2, 9], AllTiles[3, 9], AllTiles[4, 9], AllTiles[5, 9], AllTiles[6, 9], AllTiles[7, 9], AllTiles[8, 9], AllTiles[9, 9], AllTiles[10, 9], AllTiles[11, 9], AllTiles[12, 9], AllTiles[13, 9], AllTiles[14, 9] });
 
-        rows.Add(new Tile[] { AllTiles[0, 0], AllTiles[0, 1], AllTiles[0, 2], AllTiles[0, 3], AllTiles[0, 4], AllTiles[0, 5], AllTiles[0, 6], AllTiles[0, 7] });
-        rows.Add(new Tile[] { AllTiles[1, 0], AllTiles[1, 1], AllTiles[1, 2], AllTiles[1, 3], AllTiles[1, 4], AllTiles[1, 5], AllTiles[1, 6], AllTiles[1, 7] });
-        rows.Add(new Tile[] { AllTiles[2, 0], AllTiles[2, 1], AllTiles[2, 2], AllTiles[2, 3], AllTiles[2, 4], AllTiles[2, 5], AllTiles[2, 6], AllTiles[2, 7] });
-        rows.Add(new Tile[] { AllTiles[3, 0], AllTiles[3, 1], AllTiles[3, 2], AllTiles[3, 3], AllTiles[3, 4], AllTiles[3, 5], AllTiles[3, 6], AllTiles[3, 7] });
-        rows.Add(new Tile[] { AllTiles[4, 0], AllTiles[4, 1], AllTiles[4, 2], AllTiles[4, 3], AllTiles[4, 4], AllTiles[4, 5], AllTiles[4, 6], AllTiles[4, 7] });
-        rows.Add(new Tile[] { AllTiles[5, 0], AllTiles[5, 1], AllTiles[5, 2], AllTiles[5, 3], AllTiles[5, 4], AllTiles[5, 5], AllTiles[5, 6], AllTiles[5, 7] });
-        rows.Add(new Tile[] { AllTiles[6, 0], AllTiles[6, 1], AllTiles[6, 2], AllTiles[6, 3], AllTiles[6, 4], AllTiles[6, 5], AllTiles[6, 6], AllTiles[6, 7] });
-        rows.Add(new Tile[] { AllTiles[7, 0], AllTiles[7, 1], AllTiles[7, 2], AllTiles[7, 3], AllTiles[7, 4], AllTiles[7, 5], AllTiles[7, 6], AllTiles[7, 7] });
-        rows.Add(new Tile[] { AllTiles[8, 0], AllTiles[8, 1], AllTiles[8, 2], AllTiles[8, 3], AllTiles[8, 4], AllTiles[8, 5], AllTiles[8, 6], AllTiles[8, 7] });
-        rows.Add(new Tile[] { AllTiles[9, 0], AllTiles[9, 1], AllTiles[9, 2], AllTiles[9, 3], AllTiles[9, 4], AllTiles[9, 5], AllTiles[9, 6], AllTiles[9, 7] });
-        rows.Add(new Tile[] { AllTiles[10, 0], AllTiles[10, 1], AllTiles[10, 2], AllTiles[10, 3], AllTiles[10, 4], AllTiles[10, 5], AllTiles[10, 6], AllTiles[10, 7] });
+        //15行 * 10个元素
+        rows.Add(new Tile[] { AllTiles[0, 0], AllTiles[0, 1], AllTiles[0, 2], AllTiles[0, 3], AllTiles[0, 4], AllTiles[0, 5], AllTiles[0, 6], AllTiles[0, 7], AllTiles[0, 8], AllTiles[0, 9] });
+        rows.Add(new Tile[] { AllTiles[1, 0], AllTiles[1, 1], AllTiles[1, 2], AllTiles[1, 3], AllTiles[1, 4], AllTiles[1, 5], AllTiles[1, 6], AllTiles[1, 7], AllTiles[1, 8], AllTiles[1, 9] });
+        rows.Add(new Tile[] { AllTiles[2, 0], AllTiles[2, 1], AllTiles[2, 2], AllTiles[2, 3], AllTiles[2, 4], AllTiles[2, 5], AllTiles[2, 6], AllTiles[2, 7], AllTiles[2, 8], AllTiles[2, 9] });
+        rows.Add(new Tile[] { AllTiles[3, 0], AllTiles[3, 1], AllTiles[3, 2], AllTiles[3, 3], AllTiles[3, 4], AllTiles[3, 5], AllTiles[3, 6], AllTiles[3, 7], AllTiles[3, 8], AllTiles[3, 9] });
+        rows.Add(new Tile[] { AllTiles[4, 0], AllTiles[4, 1], AllTiles[4, 2], AllTiles[4, 3], AllTiles[4, 4], AllTiles[4, 5], AllTiles[4, 6], AllTiles[4, 7], AllTiles[4, 8], AllTiles[4, 9] });
+        rows.Add(new Tile[] { AllTiles[5, 0], AllTiles[5, 1], AllTiles[5, 2], AllTiles[5, 3], AllTiles[5, 4], AllTiles[5, 5], AllTiles[5, 6], AllTiles[5, 7], AllTiles[5, 8], AllTiles[5, 9] });
+        rows.Add(new Tile[] { AllTiles[6, 0], AllTiles[6, 1], AllTiles[6, 2], AllTiles[6, 3], AllTiles[6, 4], AllTiles[6, 5], AllTiles[6, 6], AllTiles[6, 7], AllTiles[6, 8], AllTiles[6, 9] });
+        rows.Add(new Tile[] { AllTiles[7, 0], AllTiles[7, 1], AllTiles[7, 2], AllTiles[7, 3], AllTiles[7, 4], AllTiles[7, 5], AllTiles[7, 6], AllTiles[7, 7], AllTiles[7, 8], AllTiles[7, 9] });
+        rows.Add(new Tile[] { AllTiles[8, 0], AllTiles[8, 1], AllTiles[8, 2], AllTiles[8, 3], AllTiles[8, 4], AllTiles[8, 5], AllTiles[8, 6], AllTiles[8, 7], AllTiles[8, 8], AllTiles[8, 9] });
+        rows.Add(new Tile[] { AllTiles[9, 0], AllTiles[9, 1], AllTiles[9, 2], AllTiles[9, 3], AllTiles[9, 4], AllTiles[9, 5], AllTiles[9, 6], AllTiles[9, 7], AllTiles[9, 8], AllTiles[9, 9] });
+        rows.Add(new Tile[] { AllTiles[10, 0], AllTiles[10, 1], AllTiles[10, 2], AllTiles[10, 3], AllTiles[10, 4], AllTiles[10, 5], AllTiles[10, 6], AllTiles[10, 7], AllTiles[10, 8], AllTiles[10, 9] });
+        rows.Add(new Tile[] { AllTiles[11, 0], AllTiles[11, 1], AllTiles[11, 2], AllTiles[11, 3], AllTiles[11, 4], AllTiles[11, 5], AllTiles[11, 6], AllTiles[11, 7], AllTiles[11, 8], AllTiles[11, 9] });
+        rows.Add(new Tile[] { AllTiles[12, 0], AllTiles[12, 1], AllTiles[12, 2], AllTiles[12, 3], AllTiles[12, 4], AllTiles[12, 5], AllTiles[12, 6], AllTiles[12, 7], AllTiles[12, 8], AllTiles[12, 9] });
+        rows.Add(new Tile[] { AllTiles[13, 0], AllTiles[13, 1], AllTiles[13, 2], AllTiles[13, 3], AllTiles[13, 4], AllTiles[13, 5], AllTiles[13, 6], AllTiles[13, 7], AllTiles[13, 8], AllTiles[13, 9] });
+        rows.Add(new Tile[] { AllTiles[14, 0], AllTiles[14, 1], AllTiles[14, 2], AllTiles[14, 3], AllTiles[14, 4], AllTiles[14, 5], AllTiles[14, 6], AllTiles[14, 7], AllTiles[14, 8], AllTiles[14, 9] });
         #endregion
 
         #region 开局时新建【1个主角】【2个建材】【x个墙壁】
