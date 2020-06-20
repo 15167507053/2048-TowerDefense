@@ -1,6 +1,6 @@
 Android
 PlayerPath?
-D:/Downloads/demo.apk
+D:/Downloads/2048.apk
 SceneListBegin?
 Assets/demo.unity
 SceneListEnd?
